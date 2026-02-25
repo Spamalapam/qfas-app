@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q.F.A.S. — Quit Fucking Around out of Spite</title>
+  <meta name="description"
+    content="Q.F.A.S. Protocol Engine — Dynamic schedule, genome-integrated fitness protocol for Adam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="scanline-overlay"></div>
+
+  <!-- Header -->
+  <header id="header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="18" stroke="url(#grad)" stroke-width="2" />
+            <path d="M14 26L20 14L26 26" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M16 22H24" stroke="url(#grad)" stroke-width="2" stroke-linecap="round" />
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="40" y2="40">
+                <stop stop-color="#00f0ff" />
+                <stop offset="1" stop-color="#b400ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">Q.F.A.S.</h1>
+          <p class="logo-sub">QUIT FUCKING AROUND OUT OF SPITE</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-dot pulse"></div>
+        <span class="status-text">PROTOCOL ACTIVE</span>
+        <span class="header-date" id="currentDate"></span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Navigation Tabs -->
+    <nav id="tabNav" class="tab-nav">
+      <button class="tab-btn active" data-tab="schedule">
+        <span class="tab-icon">📅</span> Schedule
+      </button>
+      <button class="tab-btn" data-tab="genome">
+        <span class="tab-icon">🧬</span> Genome
+      </button>
+      <button class="tab-btn" data-tab="workouts">
+        <span class="tab-icon">💪</span> Workouts
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <span class="tab-icon">📊</span> History
+      </button>
+      <button class="tab-btn" data-tab="nutrition">
+        <span class="tab-icon">🍗</span> Nutrition
+      </button>
+      <button class="tab-btn" data-tab="recovery">
+        <span class="tab-icon">😴</span> Recovery
+      </button>
+    </nav>
+
+    <!-- =========== SCHEDULE TAB =========== -->
+    <section id="tab-schedule" class="tab-panel active">
+      <div class="section-header">
+        <h2>Dynamic Schedule</h2>
+        <p class="section-desc">Hour-by-hour protocol execution. Priority: Sleep > Work > Therapy/D&D > Running >
+          Lifting > Free Time</p>
+      </div>
+
+      <div class="day-selector-row">
+        <div class="day-selector" id="daySelector"></div>
+        <button class="add-day-btn" id="addDayBtn" title="Add Day">+ Add Day</button>
+      </div>
+
+      <div class="schedule-grid" id="scheduleGrid"></div>
+    </section>
+
+    <!-- =========== GENOME TAB =========== -->
+    <section id="tab-genome" class="tab-panel">
+      <div class="section-header">
+        <h2>Biological Source Code</h2>
+        <p class="section-desc">631,455 SNPs parsed · 31/32 targets identified · Protocol overrides active</p>
+      </div>
+
+      <!-- Override Alerts -->
+      <div class="override-alerts" id="overrideAlerts"></div>
+
+      <!-- Primary Targets -->
+      <h3 class="subsection-title">Primary Protocol Targets</h3>
+      <div class="snp-grid" id="primaryGrid"></div>
+
+      <!-- Extended Markers -->
+      <h3 class="subsection-title">Extended Markers — Bonus Intelligence</h3>
+      <div class="snp-grid" id="bonusGrid"></div>
+    </section>
+
+    <!-- =========== WORKOUTS TAB =========== -->
+    <section id="tab-workouts" class="tab-panel">
+      <div class="section-header">
+        <h2>Training Matrix</h2>
+        <p class="section-desc">V-Taper Lifting (4x/wk) · Running Engine (6x/wk) · Spite Core Circuit (3x/wk)</p>
+      </div>
+
+      <div class="workout-category">
+        <h3 class="subsection-title">🏋️ V-Taper Lifting Matrix</h3>
+        <p class="rule-badge">RPE 8 · Antagonist Supersets · 45-50 min cap · Leave 1-2 reps in tank</p>
+        <div class="workout-grid" id="liftingGrid"></div>
+      </div>
+
+      <div class="workout-category">
+        <h3 class="subsection-title">🏃 Running Engine</h3>
+        <p class="rule-badge">Zero leg days · Do not compromise the mileage</p>
+        <div class="workout-grid" id="runningGrid"></div>
+      </div>
+
+      <div class="workout-category">
+        <h3 class="subsection-title">🔥 Spite Core Circuit</h3>
+        <p class="rule-badge">12-min continuous · minimal rest · 3-4 rounds on non-lifting days</p>
+        <div class="workout-grid" id="coreGrid"></div>
+      </div>
+    </section>
+
+    <!-- =========== NUTRITION TAB =========== -->
+    <section id="tab-nutrition" class="tab-panel">
+      <div class="section-header">
+        <h2>Hybrid Nutrition Protocol</h2>
+        <p class="section-desc">300 cal deficit · Carb-timed around runs · Fat oxidation at clinic</p>
+      </div>
+      <div class="nutrition-overview" id="nutritionPanel"></div>
+    </section>
+
+    <!-- =========== RECOVERY TAB =========== -->
+    <section id="tab-recovery" class="tab-panel">
+      <div class="section-header">
+        <h2>Recovery & Sleep Protocol</h2>
+        <p class="section-desc">Non-negotiable sleep · Mg Glycinate · Screen blackout · 65°F pitch black</p>
+      </div>
+      <div class="recovery-panel" id="recoveryPanel"></div>
+    </section>
+
+    <!-- =========== HISTORY TAB =========== -->
+    <section id="tab-history" class="tab-panel">
+      <div class="section-header">
+        <h2>Workout History</h2>
+        <p class="section-desc">Your logged sessions. Weight, reps, volume, RPE — all tracked.</p>
+      </div>
+      <div id="historyPanel"></div>
+    </section>
+  </main>
+
+  <!-- Workout Player Overlay -->
+  <div id="workoutPlayerOverlay" class="wp-overlay"></div>
+
+  <!-- Calendar Editor Modal -->
+  <div id="calendarModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Day</h3>
+        <button class="modal-close" id="modalCloseBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Date</label><input type="date" id="modalDate"></div>
+        <div class="form-group"><label>Tagline</label><input type="text" id="modalTagline"
+            placeholder="e.g. THE HARD SHUTDOWN"></div>
+        <div class="form-group"><label>Run Type</label>
+          <select id="modalRunType">
+            <option value="REST — Zero Running">REST — Zero Running</option>
+            <option value="Easy Run (20-30 min)">Easy Run (20-30 min)</option>
+            <option value="The Spite Sprints">Spite Sprints (Intervals)</option>
+            <option value="Tempo (15-20 min)">Tempo (15-20 min)</option>
+            <option value="The Shakeout (20-30 min)">Shakeout (Very Easy)</option>
+            <option value="Long Run (45-60+ min)">Long Run (Empire Builder)</option>
+            <option value="Decompression (30-45 min)">Decompression (Easy)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Lift Slot</label>
+          <select id="modalLiftSlot">
+            <option value="None">None</option>
+            <option value="Workout 1: Width & The Shelf">Workout 1: Width & Shelf</option>
+            <option value="Workout 2: Caps & Pipes">Workout 2: Caps & Pipes</option>
+            <option value="Workout 3: Density & Detail">Workout 3: Density & Detail</option>
+            <option value="Workout 4: V-Taper Annihilation">Workout 4: V-Taper Annihilation</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Time Blocks (one per line: <code>7:00 AM | Label | Type | Detail</code>)</label>
+          <textarea id="modalBlocks" rows="6" placeholder="7:00 AM | Wake | wake | Start the day
+8:45 AM | Work Starts | work | Optician shift"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="wp-btn wp-btn-skip" id="modalDeleteBtn" style="display:none">DELETE DAY</button>
+        <button class="wp-btn wp-btn-next" id="modalSaveBtn">SAVE</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>ANTIGRAVITY Q.F.A.S. ENGINE · Built from spite, optimized by DNA</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="workout-player.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
