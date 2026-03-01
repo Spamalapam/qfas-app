@@ -1,4 +1,4 @@
-// ===== Q.F.A.S. PROTOCOL ENGINE — UI LOGIC =====
+﻿// ===== Q.F.A.S. PROTOCOL ENGINE â€” UI LOGIC =====
 
 const SCHED_STORAGE = 'qfas_custom_schedule';
 
@@ -105,14 +105,14 @@ function renderScheduleDay(date) {
       <div class="sh-tagline">${day.tagline}</div>
     </div>
     <div style="display:flex;gap:6px">
-      <button class="schedule-edit-btn" onclick="openCalendarModal('${date}')">✏️ Edit</button>
-      <button class="schedule-delete-btn" onclick="deleteDay('${date}')">🗑️</button>
+      <button class="schedule-edit-btn" onclick="openCalendarModal('${date}')">âœï¸ Edit</button>
+      <button class="schedule-delete-btn" onclick="deleteDay('${date}')">ðŸ—‘ï¸</button>
     </div>
   </div>`;
 
   html += `<div class="schedule-meta">
-    <span class="meta-badge run">🏃 ${day.runType}</span>
-    <span class="meta-badge lift">🏋️ ${day.liftSlot}</span>
+    <span class="meta-badge run">ðŸƒ ${day.runType}</span>
+    <span class="meta-badge lift">ðŸ‹ï¸ ${day.liftSlot}</span>
   </div>`;
 
   (day.blocks || []).forEach((block, idx) => {
@@ -120,7 +120,7 @@ function renderScheduleDay(date) {
     html += `<div class="schedule-block type-${block.type} ${isCompleted ? 'completed' : ''}" data-idx="${idx}">
       <input type="checkbox" class="block-checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleBlockCompletion('${date}', ${idx})">
       <div class="sb-time">${block.time}</div>
-      <div class="sb-icon">${block.icon || '📌'}</div>
+      <div class="sb-icon">${block.icon || 'ðŸ“Œ'}</div>
       <div class="sb-content">
         <div class="sb-label">${block.label}</div>
         ${block.detail ? `<div class="sb-detail">${escHtml(block.detail)}</div>` : ''}
@@ -211,8 +211,8 @@ function openCalendarModal(editDate) {
 }
 
 function iconFor(type) {
-  const map = { wake: '☀️', nutrition: '🍗', running: '🏃', lifting: '🏋️', core: '🔥', work: '💼', recovery: '💤', sleep: '🌙', free: '🎯' };
-  return map[type] || '📌';
+  const map = { wake: 'â˜€ï¸', nutrition: 'ðŸ—', running: 'ðŸƒ', lifting: 'ðŸ‹ï¸', core: 'ðŸ”¥', work: 'ðŸ’¼', recovery: 'ðŸ’¤', sleep: 'ðŸŒ™', free: 'ðŸŽ¯' };
+  return map[type] || 'ðŸ“Œ';
 }
 
 // ===== GENOME =====
@@ -276,12 +276,12 @@ function renderLifting() {
       html += `<div class="wc-exercise">
         <span class="wc-set">${ex.set}</span>
         <div>
-          <div class="wc-exercise-name">${ex.name} <span class="wc-reps">${ex.sets}×${ex.repRange}</span></div>
-          <div class="wc-pair">↔ ${ex.pair}: ${ex.pairName} (${ex.pairSets}×${ex.pairReps})</div>
+          <div class="wc-exercise-name">${ex.name} <span class="wc-reps">${ex.sets}Ã—${ex.repRange}</span></div>
+          <div class="wc-pair">â†” ${ex.pair}: ${ex.pairName} (${ex.pairSets}Ã—${ex.pairReps})</div>
         </div>
       </div>`;
     });
-    html += `<button class="start-workout-btn" onclick="WorkoutPlayer.startLifting(${idx})">▶ START WORKOUT</button>`;
+    html += `<button class="start-workout-btn" onclick="WorkoutPlayer.startLifting(${idx})">â–¶ START WORKOUT</button>`;
     html += `</div>`;
   });
   el.innerHTML = html;
@@ -297,7 +297,7 @@ function renderRunning() {
       <div>
         <div class="rc-day">${r.day}</div>
         <div class="rc-name">${r.name}</div>
-        <div class="rc-detail">${r.type} · ${r.detail}</div>
+        <div class="rc-detail">${r.type} Â· ${r.detail}</div>
       </div>
     </div>`;
   });
@@ -316,7 +316,7 @@ function renderCore() {
       <div class="ce-reps">${ex.reps}</div>
     </div>`;
   });
-  html += `<button class="start-workout-btn start-core-btn" onclick="WorkoutPlayer.startCore()">🔥 START CORE CIRCUIT</button>`;
+  html += `<button class="start-workout-btn start-core-btn" onclick="WorkoutPlayer.startCore()">ðŸ”¥ START CORE CIRCUIT</button>`;
   html += `</div>`;
   el.innerHTML = html;
 }
@@ -333,7 +333,7 @@ function initNutrition() {
   html += `<div class="nutri-card">
     <div class="nutri-title">Protein Target</div>
     <div class="nutri-stat">${NUTRITION.proteinPerLb}</div>
-    <div class="nutri-detail">per pound of bodyweight. Elevated from baseline 1.0g due to triple inflammatory stack (IL-6 CG, TNF-α AG, IL-1β AG) and FTO AA satiety support.</div>
+    <div class="nutri-detail">per pound of bodyweight. Elevated from baseline 1.0g due to triple inflammatory stack (IL-6 CG, TNF-Î± AG, IL-1Î² AG) and FTO AA satiety support.</div>
   </div>`;
   html += `<div class="nutri-card">
     <div class="nutri-title">Carb Timing</div>
@@ -406,7 +406,7 @@ function initHistory() {
           <div><div class="hc-stat-val">${mins} min</div><div class="hc-stat-label">DURATION</div></div>
           <div><div class="hc-stat-val">${h.sets}</div><div class="hc-stat-label">SETS</div></div>
           <div><div class="hc-stat-val">${h.reps}</div><div class="hc-stat-label">REPS</div></div>
-          <div><div class="hc-stat-val">${h.volume > 0 ? Math.round(h.volume).toLocaleString() : '—'}</div><div class="hc-stat-label">LBS VOL</div></div>
+          <div><div class="hc-stat-val">${h.volume > 0 ? Math.round(h.volume).toLocaleString() : 'â€”'}</div><div class="hc-stat-label">LBS VOL</div></div>
           <div><div class="hc-stat-val">${h.avgRPE}</div><div class="hc-stat-label">AVG RPE</div></div>
         </div>
       </div>`;
@@ -422,18 +422,27 @@ function saveSyncData() {
     sleepEnd: document.getElementById('syncSleepEnd').value,
     sleepQuality: document.getElementById('syncSleepQuality').value,
     energyScore: document.getElementById('syncEnergyScore').value,
+    runType: document.getElementById('syncRunType').value,
+    runDistance: document.getElementById('syncRunDistance').value,
+    runDuration: document.getElementById('syncRunDuration').value,
+    runPace: document.getElementById('syncRunPace').value,
+    runNotes: document.getElementById('syncRunNotes').value,
     weight: document.getElementById('syncWeight').value,
     goalWeight: document.getElementById('syncGoalWeight').value,
     avgHR: document.getElementById('syncAvgHR').value,
     antioxidant: document.getElementById('syncAntioxidant').value,
+    stress: document.getElementById('syncStress').value,
+    spO2: document.getElementById('syncSpO2').value,
+    steps: document.getElementById('syncSteps').value,
     meditation: document.getElementById('syncMeditation').checked,
     dateLogged: new Date().toISOString()
   };
   localStorage.setItem('qfas_daily_metrics', JSON.stringify(data));
-  const btn = document.querySelector('.ai-sync-panel .wp-btn');
-  const oldText = btn.textContent;
-  btn.textContent = 'SAVED!';
-  setTimeout(() => btn.textContent = oldText, 2000);
+
+  const btn = document.getElementById('saveMetricsBtn');
+  btn.textContent = '\u2705 SAVED!';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'SAVE METRICS'; btn.style.background = ''; }, 2000);
 }
 
 function loadSyncData() {
@@ -444,23 +453,32 @@ function loadSyncData() {
     document.getElementById('syncSleepEnd').value = data.sleepEnd || '';
     document.getElementById('syncSleepQuality').value = data.sleepQuality || '';
     document.getElementById('syncEnergyScore').value = data.energyScore || '';
+    document.getElementById('syncRunType').value = data.runType || '';
+    document.getElementById('syncRunDistance').value = data.runDistance || '';
+    document.getElementById('syncRunDuration').value = data.runDuration || '';
+    document.getElementById('syncRunPace').value = data.runPace || '';
+    document.getElementById('syncRunNotes').value = data.runNotes || '';
     document.getElementById('syncWeight').value = data.weight || '';
     document.getElementById('syncGoalWeight').value = data.goalWeight || '';
     document.getElementById('syncAvgHR').value = data.avgHR || '';
     document.getElementById('syncAntioxidant').value = data.antioxidant || '';
+    document.getElementById('syncStress').value = data.stress || '';
+    document.getElementById('syncSpO2').value = data.spO2 || '';
+    document.getElementById('syncSteps').value = data.steps || '';
     document.getElementById('syncMeditation').checked = !!data.meditation;
   } catch (e) { console.error('Error loading sync data', e); }
 }
 
-// Call load on init
+// Load saved metrics on page load
 document.addEventListener('DOMContentLoaded', loadSyncData);
 
 function generateAIPrompt() {
   const metrics = JSON.parse(localStorage.getItem('qfas_daily_metrics')) || {};
   const schedule = getScheduleData();
   const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
+  const workoutHistory = JSON.parse(localStorage.getItem('qfas_workout_history')) || [];
 
-  // Format history blocks for the last 3 days
+  // Format recent schedule completion for the last 3 days
   const today = new Date();
   let scheduleContext = "RECENT SCHEDULE COMPLETION:\n";
 
@@ -469,7 +487,7 @@ function generateAIPrompt() {
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
 
-    if (schedule[dateStr]) {
+    if (schedule[dateStr] && !schedule[dateStr]._deleted) {
       scheduleContext += `\n--- ${schedule[dateStr].dayLabel} ---\n`;
       const dayComps = completions[dateStr] || {};
       (schedule[dateStr].blocks || []).forEach((block, idx) => {
@@ -479,7 +497,26 @@ function generateAIPrompt() {
     }
   }
 
-  const prompt = `You are the Q.F.A.S. Protocol Engine (Quit F*cking Around out of Spite) for Adam. 
+  // Format recent workout history (last 5)
+  let historyContext = "RECENT WORKOUT HISTORY:\n";
+  const recentWorkouts = workoutHistory.slice(-5);
+  if (recentWorkouts.length > 0) {
+    recentWorkouts.forEach(h => {
+      const d = new Date(h.date);
+      const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      historyContext += `${dateStr}: ${h.workout} | ${Math.floor(h.duration / 60)}min | ${h.sets} sets | ${h.reps} reps | Vol: ${h.volume || 'N/A'} | RPE: ${h.avgRPE}\n`;
+    });
+  } else {
+    historyContext += "No logged workouts yet.\n";
+  }
+
+  // Build run summary
+  let runSummary = "No run logged today.";
+  if (metrics.runType) {
+    runSummary = `${metrics.runType} | ${metrics.runDistance || '?'} mi | ${metrics.runDuration || '?'} min | Pace: ${metrics.runPace || 'N/A'} | Notes: ${metrics.runNotes || 'none'}`;
+  }
+
+  const prompt = `You are the Q.F.A.S. Protocol Engine (Quit F*cking Around out of Spite) for Adam.
 Your goal is to enforce the genome-integrated protocol, optimize the daily schedule based on completion rates, and provide uncompromising accountability.
 
 Here is Adam's daily data:
@@ -487,18 +524,30 @@ Here is Adam's daily data:
 [DAILY METRICS]
 Sleep: ${metrics.sleepStart || 'N/A'} to ${metrics.sleepEnd || 'N/A'} (Quality: ${metrics.sleepQuality || 'N/A'}/10)
 Samsung Energy Score: ${metrics.energyScore || 'N/A'}/100
+Stress Score: ${metrics.stress || 'N/A'}/100
+SpO2: ${metrics.spO2 || 'N/A'}%
+Steps: ${metrics.steps || 'N/A'}
 Current Weight: ${metrics.weight || 'N/A'} lbs (Goal: ${metrics.goalWeight || 'N/A'} lbs)
-Avg HR: ${metrics.avgHR || 'N/A'} | Antioxidant Index: ${metrics.antioxidant || 'N/A'}
+Avg Resting HR: ${metrics.avgHR || 'N/A'} | Antioxidant Index: ${metrics.antioxidant || 'N/A'}
 Meditation Completed: ${metrics.meditation ? 'Yes' : 'No'}
+
+[TODAY'S RUN]
+${runSummary}
 
 [GENOME RULES OVERVIEW (DO NOT VIOLATE)]
 1. FTO AA = High appetite. Strict calorie tracking. 1.2g/lb protein.
 2. COMT AA / BDNF CT = High anxiety/low dopamine under stress. RUNNING IS MEDICINE.
-3. IL-6 CG / TNF-a AG = Slow recoverer. 8 hrs sleep minimum. Post-run omegas.
-4. ACTN3 TT = Endurance dominant. 120-150s rest between lifts.
+3. IL-6 CG / TNF-a AG / IL-1b AG = Triple inflammatory stack. Slow recoverer. 8 hrs sleep minimum. Post-run omegas + curcumin.
+4. ACTN3 TT + ACE II = Endurance dominant. 120-150s rest between lifts. Not a power lifter.
 5. MTNR1B CG = No carbs within 2 hrs of sleep.
+6. APOE e3/e4 = Elevated CVD/Alzheimer risk. Sleep + exercise + omega-3s are neuroprotective.
+7. VDR CT = Supplement 3000-5000 IU D3 + K2-MK7.
+8. COL5A1 CT = 5-10 min dynamic mobility before hard runs. 50 mi/week ceiling.
+9. ADORA2A CC = Caffeine cutoff 2 PM.
 
 ${scheduleContext}
+
+${historyContext}
 
 INSTRUCTIONS:
 1. Analyze the completion rates and daily metrics.
@@ -516,25 +565,40 @@ Output your response STRICTLY as JSON with the following structure, and nothing 
       "runType": "Easy Run",
       "liftSlot": "None",
       "blocks": [
-        {"time": "7:00 AM", "label": "Wake", "icon": "🔔", "type": "wake", "detail": "..."}
+        {"time": "7:00 AM", "label": "Wake", "icon": "\ud83d\udd14", "type": "wake", "detail": "..."}
       ]
     }
   }
 }
 `;
 
-  navigator.clipboard.writeText(prompt).then(() => {
-    const btn = document.querySelector('button[onclick="generateAIPrompt()"]');
-    const oldText = btn.textContent;
-    btn.textContent = 'COPIED TO CLIPBOARD!';
-    setTimeout(() => btn.textContent = oldText, 2500);
-  }).catch(err => alert('Failed to copy. Try selecting the text manually.'));
+  // Show the prompt in the output textarea
+  const outputArea = document.getElementById('aiPromptOutput');
+  outputArea.value = prompt;
+  outputArea.style.display = 'block';
+
+  // Try clipboard, but don't rely on it
+  const btn = document.getElementById('generatePromptBtn');
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(prompt).then(() => {
+      btn.textContent = '\u2705 COPIED TO CLIPBOARD!';
+      setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 2500);
+    }).catch(() => {
+      btn.textContent = '\u2705 PROMPT GENERATED! SELECT & COPY BELOW';
+      outputArea.select();
+      setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 3000);
+    });
+  } else {
+    btn.textContent = '\u2705 PROMPT GENERATED! SELECT & COPY BELOW';
+    outputArea.select();
+    setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 3000);
+  }
 }
 
 function importAIResponse() {
   const textarea = document.getElementById('aiImportPayload');
   const payloadStr = textarea.value.trim();
-  if (!payloadStr) return;
+  if (!payloadStr) { alert('Paste the AI response JSON first.'); return; }
 
   try {
     // Attempt to extract JSON if the AI wrapped it in markdown
@@ -554,6 +618,7 @@ function importAIResponse() {
       initSchedule(); // Re-render schedule UI
     }
 
+    // Show insights
     if (parsed.grade || parsed.feedback) {
       const insights = document.getElementById('aiInsightsPanel');
       insights.style.display = 'block';
@@ -562,13 +627,13 @@ function importAIResponse() {
     }
 
     const btn = document.querySelector('button[onclick="importAIResponse()"]');
-    const oldText = btn.textContent;
-    btn.textContent = 'IMPORTED SUCCESSFULLY!';
-    setTimeout(() => btn.textContent = oldText, 2500);
+    btn.textContent = '\u2705 IMPORTED!';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => { btn.textContent = '\ud83d\udce5 IMPORT RESPONSE'; btn.style.background = 'linear-gradient(90deg,#00f0ff,#b400ff)'; }, 2500);
     textarea.value = '';
 
   } catch (err) {
-    alert('Failed to parse AI response. Make sure it is valid JSON.');
+    alert('Failed to parse AI response. Make sure it is valid JSON.\n\nError: ' + err.message);
     console.error(err);
   }
 }
