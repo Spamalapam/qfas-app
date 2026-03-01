@@ -1678,3 +1678,174 @@ footer {
   color: var(--text-dim);
   font-size: .9rem
 }
+
+/* ===== PROTOCOL TAB ===== */
+.protocols-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.protocol-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.genome-basis {
+  font-size: 0.78rem;
+  color: var(--cyan);
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: rgba(0, 240, 255, 0.05);
+  border-left: 3px solid var(--cyan);
+  border-radius: 4px;
+}
+
+.protocol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.protocol-card {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.protocol-card-header {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+.protocol-step {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.protocol-step:last-child {
+  border-bottom: none;
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.step-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.step-detail {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Biohacking matrix */
+.biohack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.biohack-card {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.biohack-card:hover {
+  border-color: var(--cyan);
+}
+
+.biohack-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.biohack-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.biohack-freq {
+  font-size: 0.8rem;
+  color: var(--cyan);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.biohack-meta {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.biohack-days {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.day-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--cyan);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.biohack-detail {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* ===== NEW BLOCK TYPE ACCENTS ===== */
+.schedule-block.type-skincare {
+  border-left: 3px solid #e6a0ff;
+}
+
+.schedule-block.type-haircare {
+  border-left: 3px solid #ffb347;
+}
+
+.schedule-block.type-biohack {
+  border-left: 3px solid #00f0ff;
+}

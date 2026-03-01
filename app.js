@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNutrition();
   initRecovery();
   initHistory();
+  initProtocols();
   initCalendarModal();
 });
 
@@ -211,8 +212,58 @@ function openCalendarModal(editDate) {
 }
 
 function iconFor(type) {
-  const map = { wake: 'â˜€ï¸', nutrition: 'ðŸ—', running: 'ðŸƒ', lifting: 'ðŸ‹ï¸', core: 'ðŸ”¥', work: 'ðŸ’¼', recovery: 'ðŸ’¤', sleep: 'ðŸŒ™', free: 'ðŸŽ¯' };
-  return map[type] || 'ðŸ“Œ';
+  const map = { wake: '☀️', nutrition: '🍗', running: '🏃', lifting: '🏋️', core: '🔥', work: '💼', recovery: '💤', sleep: '🌙', free: '🎯', skincare: '🧴', haircare: '💇', biohack: '🧊' };
+  return map[type] || '📌';
+}
+
+// ===== PROTOCOLS TAB =====
+function initProtocols() {
+  // Skincare
+  document.getElementById('skinGenomeBasis').textContent = '🧬 ' + SKINCARE.genomeBasis;
+  let skinHtml = '';
+  // AM Routine card
+  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.am.title}</div>`;
+  SKINCARE.am.steps.forEach(s => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  // PM Routine card
+  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.pm.title}</div>`;
+  SKINCARE.pm.steps.forEach(s => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  // Weekly treatments card
+  skinHtml += `<div class="protocol-card" style="grid-column:1/-1;"><div class="protocol-card-header">Weekly Treatments</div>`;
+  SKINCARE.weekly.forEach(w => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${w.day.slice(0, 3)}</span><div><div class="step-name">${w.treatment}</div><div class="step-detail">${w.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  document.getElementById('skincareGrid').innerHTML = skinHtml;
+
+  // Haircare
+  document.getElementById('hairGenomeBasis').textContent = '🧬 ' + HAIRCARE.genomeBasis;
+  let hairHtml = `<div class="protocol-card"><div class="protocol-card-header">Wash Routine (${HAIRCARE.washDays.join(', ')})</div>`;
+  HAIRCARE.routine.forEach(s => {
+    hairHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  hairHtml += `<div class="protocol-step"><span class="step-num">+</span><div><div class="step-name">Scalp Treatment</div><div class="step-detail">${HAIRCARE.scalpTreatment}</div></div></div>`;
+  hairHtml += `</div>`;
+  document.getElementById('haircareGrid').innerHTML = hairHtml;
+
+  // Biohacking matrix
+  let bioHtml = '';
+  BIOHACKING.protocols.forEach(p => {
+    bioHtml += `<div class="biohack-card">
+      <div class="biohack-icon">${p.icon}</div>
+      <div class="biohack-name">${p.name}</div>
+      <div class="biohack-freq">${p.frequency}</div>
+      <div class="biohack-meta"><span>⏱ ${p.duration}</span><span>🕐 ${p.timing}</span></div>
+      <div class="biohack-days">${p.days.map(d => `<span class="day-chip">${d}</span>`).join('')}</div>
+      <div class="biohack-detail">${p.detail}</div>
+    </div>`;
+  });
+  document.getElementById('biohackGrid').innerHTML = bioHtml;
 }
 
 // ===== GENOME =====

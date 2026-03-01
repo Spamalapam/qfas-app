@@ -69,6 +69,9 @@
       <button class="tab-btn" data-tab="recovery">
         <span class="tab-icon">😴</span> Recovery
       </button>
+      <button class="tab-btn" data-tab="protocols">
+        <span class="tab-icon">🧬</span> Protocols
+      </button>
       <button class="tab-btn" data-tab="ai-sync">
         <span class="tab-icon">🤖</span> AI Sync
       </button>
@@ -160,6 +163,36 @@
         <p class="section-desc">Your logged sessions. Weight, reps, volume, RPE — all tracked.</p>
       </div>
       <div id="historyPanel"></div>
+    </section>
+
+    <!-- =========== PROTOCOLS TAB =========== -->
+    <section id="tab-protocols" class="tab-panel">
+      <div class="section-header">
+        <h2>Genome-Driven Protocols</h2>
+        <p class="section-desc">Skincare, haircare, and biohacking routines derived from your genetic profile.</p>
+      </div>
+
+      <div class="protocols-container">
+        <!-- Skincare -->
+        <div class="protocol-section">
+          <h3 class="subsection-title">🧴 Skincare Protocol</h3>
+          <p class="genome-basis" id="skinGenomeBasis"></p>
+          <div class="protocol-grid" id="skincareGrid"></div>
+        </div>
+
+        <!-- Haircare -->
+        <div class="protocol-section">
+          <h3 class="subsection-title">💇 Haircare Protocol</h3>
+          <p class="genome-basis" id="hairGenomeBasis"></p>
+          <div class="protocol-grid" id="haircareGrid"></div>
+        </div>
+
+        <!-- Biohacking -->
+        <div class="protocol-section">
+          <h3 class="subsection-title">🧬 Biohacking Matrix</h3>
+          <div class="biohack-grid" id="biohackGrid"></div>
+        </div>
+      </div>
     </section>
 
     <!-- =========== AI SYNC TAB =========== -->
