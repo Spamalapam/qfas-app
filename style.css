@@ -756,16 +756,53 @@ main {
   padding: 18px;
 }
 
-.core-exercise {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+.schedule-block {
+  display: grid;
+  grid-template-columns: 30px 60px 40px 1fr;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
 }
 
-.core-exercise:last-child {
+.schedule-block:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.schedule-block:last-child {
   border-bottom: none;
+}
+
+.schedule-block.completed {
+  opacity: 0.4;
+}
+
+.schedule-block.completed .sb-label,
+.schedule-block.completed .sb-detail {
+  text-decoration: line-through;
+}
+
+.block-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+  margin-top: 2px;
+}
+
+.ai-sync-tab-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  margin-top: 20px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
 }
 
 .ce-name {

@@ -54,7 +54,7 @@ function saveCustomDay(date, dayData) {
 function deleteCustomDay(date) {
   try {
     const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE)) || {};
-    delete custom[date];
+    custom[date] = { _deleted: true }; // Mark as deleted instead of removing key
     localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
   } catch { }
 }
@@ -64,7 +64,7 @@ function initSchedule() {
   const schedule = getScheduleData();
   const selector = document.getElementById('daySelector');
   selector.innerHTML = '';
-  const dates = Object.keys(schedule).sort();
+  const dates = Object.keys(schedule).filter(d => !schedule[d]._deleted).sort();
 
   dates.forEach((date, i) => {
     const btn = document.createElement('button');
@@ -95,6 +95,9 @@ function renderScheduleDay(date) {
   const day = schedule[date];
   if (!day) { grid.innerHTML = '<p style="color:var(--text-dim)">No schedule data for this date.</p>'; return; }
 
+  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
+  const dayCompletions = completions[date] || {};
+
   let html = '';
   html += `<div class="schedule-header">
     <div>
@@ -112,8 +115,10 @@ function renderScheduleDay(date) {
     <span class="meta-badge lift">🏋️ ${day.liftSlot}</span>
   </div>`;
 
-  (day.blocks || []).forEach(block => {
-    html += `<div class="schedule-block type-${block.type}">
+  (day.blocks || []).forEach((block, idx) => {
+    const isCompleted = dayCompletions[idx];
+    html += `<div class="schedule-block type-${block.type} ${isCompleted ? 'completed' : ''}" data-idx="${idx}">
+      <input type="checkbox" class="block-checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleBlockCompletion('${date}', ${idx})">
       <div class="sb-time">${block.time}</div>
       <div class="sb-icon">${block.icon || '📌'}</div>
       <div class="sb-content">
@@ -124,6 +129,16 @@ function renderScheduleDay(date) {
   });
 
   grid.innerHTML = html;
+}
+
+function toggleBlockCompletion(date, idx) {
+  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
+  if (!completions[date]) completions[date] = {};
+
+  completions[date][idx] = !completions[date][idx];
+  localStorage.setItem('qfas_completions', JSON.stringify(completions));
+
+  renderScheduleDay(date);
 }
 
 function deleteDay(date) {
@@ -400,7 +415,166 @@ function initHistory() {
   } catch { el.innerHTML = '<div class="empty-state">Error loading history.</div>'; }
 }
 
+// ===== OMNI-TRACKER / AI SYNC =====
+function saveSyncData() {
+  const data = {
+    sleepStart: document.getElementById('syncSleepStart').value,
+    sleepEnd: document.getElementById('syncSleepEnd').value,
+    sleepQuality: document.getElementById('syncSleepQuality').value,
+    energyScore: document.getElementById('syncEnergyScore').value,
+    weight: document.getElementById('syncWeight').value,
+    goalWeight: document.getElementById('syncGoalWeight').value,
+    avgHR: document.getElementById('syncAvgHR').value,
+    antioxidant: document.getElementById('syncAntioxidant').value,
+    meditation: document.getElementById('syncMeditation').checked,
+    dateLogged: new Date().toISOString()
+  };
+  localStorage.setItem('qfas_daily_metrics', JSON.stringify(data));
+  const btn = document.querySelector('.ai-sync-panel .wp-btn');
+  const oldText = btn.textContent;
+  btn.textContent = 'SAVED!';
+  setTimeout(() => btn.textContent = oldText, 2000);
+}
+
+function loadSyncData() {
+  try {
+    const data = JSON.parse(localStorage.getItem('qfas_daily_metrics'));
+    if (!data) return;
+    document.getElementById('syncSleepStart').value = data.sleepStart || '';
+    document.getElementById('syncSleepEnd').value = data.sleepEnd || '';
+    document.getElementById('syncSleepQuality').value = data.sleepQuality || '';
+    document.getElementById('syncEnergyScore').value = data.energyScore || '';
+    document.getElementById('syncWeight').value = data.weight || '';
+    document.getElementById('syncGoalWeight').value = data.goalWeight || '';
+    document.getElementById('syncAvgHR').value = data.avgHR || '';
+    document.getElementById('syncAntioxidant').value = data.antioxidant || '';
+    document.getElementById('syncMeditation').checked = !!data.meditation;
+  } catch (e) { console.error('Error loading sync data', e); }
+}
+
+// Call load on init
+document.addEventListener('DOMContentLoaded', loadSyncData);
+
+function generateAIPrompt() {
+  const metrics = JSON.parse(localStorage.getItem('qfas_daily_metrics')) || {};
+  const schedule = getScheduleData();
+  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
+
+  // Format history blocks for the last 3 days
+  const today = new Date();
+  let scheduleContext = "RECENT SCHEDULE COMPLETION:\n";
+
+  for (let i = 2; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+
+    if (schedule[dateStr]) {
+      scheduleContext += `\n--- ${schedule[dateStr].dayLabel} ---\n`;
+      const dayComps = completions[dateStr] || {};
+      (schedule[dateStr].blocks || []).forEach((block, idx) => {
+        const status = dayComps[idx] ? '[X]' : '[ ]';
+        scheduleContext += `${status} ${block.time} | ${block.label} | ${block.type}\n`;
+      });
+    }
+  }
+
+  const prompt = `You are the Q.F.A.S. Protocol Engine (Quit F*cking Around out of Spite) for Adam. 
+Your goal is to enforce the genome-integrated protocol, optimize the daily schedule based on completion rates, and provide uncompromising accountability.
+
+Here is Adam's daily data:
+
+[DAILY METRICS]
+Sleep: ${metrics.sleepStart || 'N/A'} to ${metrics.sleepEnd || 'N/A'} (Quality: ${metrics.sleepQuality || 'N/A'}/10)
+Samsung Energy Score: ${metrics.energyScore || 'N/A'}/100
+Current Weight: ${metrics.weight || 'N/A'} lbs (Goal: ${metrics.goalWeight || 'N/A'} lbs)
+Avg HR: ${metrics.avgHR || 'N/A'} | Antioxidant Index: ${metrics.antioxidant || 'N/A'}
+Meditation Completed: ${metrics.meditation ? 'Yes' : 'No'}
+
+[GENOME RULES OVERVIEW (DO NOT VIOLATE)]
+1. FTO AA = High appetite. Strict calorie tracking. 1.2g/lb protein.
+2. COMT AA / BDNF CT = High anxiety/low dopamine under stress. RUNNING IS MEDICINE.
+3. IL-6 CG / TNF-a AG = Slow recoverer. 8 hrs sleep minimum. Post-run omegas.
+4. ACTN3 TT = Endurance dominant. 120-150s rest between lifts.
+5. MTNR1B CG = No carbs within 2 hrs of sleep.
+
+${scheduleContext}
+
+INSTRUCTIONS:
+1. Analyze the completion rates and daily metrics.
+2. Provide harsh but analytical feedback on what was missed and why. Grade the performance (A to F).
+3. Generate the schedule for the next 2 days (use today as a reference) formatted exactly as the JSON below. Ensure any critical uncompleted tasks roll over if necessary.
+
+Output your response STRICTLY as JSON with the following structure, and nothing else outside the JSON block:
+{
+  "grade": "B-",
+  "feedback": "Your analysis here...",
+  "newDays": {
+    "YYYY-MM-DD": {
+      "dayLabel": "Friday, Feb 27",
+      "tagline": "EASY RUN DAY",
+      "runType": "Easy Run",
+      "liftSlot": "None",
+      "blocks": [
+        {"time": "7:00 AM", "label": "Wake", "icon": "🔔", "type": "wake", "detail": "..."}
+      ]
+    }
+  }
+}
+`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.querySelector('button[onclick="generateAIPrompt()"]');
+    const oldText = btn.textContent;
+    btn.textContent = 'COPIED TO CLIPBOARD!';
+    setTimeout(() => btn.textContent = oldText, 2500);
+  }).catch(err => alert('Failed to copy. Try selecting the text manually.'));
+}
+
+function importAIResponse() {
+  const textarea = document.getElementById('aiImportPayload');
+  const payloadStr = textarea.value.trim();
+  if (!payloadStr) return;
+
+  try {
+    // Attempt to extract JSON if the AI wrapped it in markdown
+    let jsonStr = payloadStr;
+    const match = payloadStr.match(/\{[\s\S]*\}/);
+    if (match) {
+      jsonStr = match[0];
+    }
+
+    const parsed = JSON.parse(jsonStr);
+
+    // Save new days to local storage custom schedule
+    if (parsed.newDays) {
+      const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE)) || {};
+      Object.assign(custom, parsed.newDays);
+      localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+      initSchedule(); // Re-render schedule UI
+    }
+
+    if (parsed.grade || parsed.feedback) {
+      const insights = document.getElementById('aiInsightsPanel');
+      insights.style.display = 'block';
+      document.getElementById('aiGrade').textContent = `GRADE: ${parsed.grade || 'N/A'}`;
+      document.getElementById('aiFeedback').textContent = parsed.feedback || '';
+    }
+
+    const btn = document.querySelector('button[onclick="importAIResponse()"]');
+    const oldText = btn.textContent;
+    btn.textContent = 'IMPORTED SUCCESSFULLY!';
+    setTimeout(() => btn.textContent = oldText, 2500);
+    textarea.value = '';
+
+  } catch (err) {
+    alert('Failed to parse AI response. Make sure it is valid JSON.');
+    console.error(err);
+  }
+}
+
 // ===== UTILITY =====
 function escHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+

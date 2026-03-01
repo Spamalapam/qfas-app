@@ -69,6 +69,9 @@
       <button class="tab-btn" data-tab="recovery">
         <span class="tab-icon">😴</span> Recovery
       </button>
+      <button class="tab-btn" data-tab="ai-sync">
+        <span class="tab-icon">🤖</span> AI Sync
+      </button>
     </nav>
 
     <!-- =========== SCHEDULE TAB =========== -->
@@ -157,6 +160,64 @@
         <p class="section-desc">Your logged sessions. Weight, reps, volume, RPE — all tracked.</p>
       </div>
       <div id="historyPanel"></div>
+    </section>
+
+    <!-- =========== AI SYNC TAB =========== -->
+    <section id="tab-ai-sync" class="tab-panel">
+      <div class="section-header">
+        <h2>Omni-Tracker & AI Engine Sync</h2>
+        <p class="section-desc">Log your daily metrics, generate payload for Gemini, and import the computed protocol.</p>
+      </div>
+      
+      <div class="ai-sync-container">
+        <!-- Omni-Tracker Form -->
+        <div class="ai-sync-panel">
+          <h3 class="subsection-title">Daily Metrics Input</h3>
+          <div class="form-group-row">
+            <div class="form-group"><label>Sleep Start</label><input type="time" id="syncSleepStart"></div>
+            <div class="form-group"><label>Sleep End</label><input type="time" id="syncSleepEnd"></div>
+          </div>
+          <div class="form-group-row">
+            <div class="form-group"><label>Sleep Quality (1-10)</label><input type="number" min="1" max="10" id="syncSleepQuality"></div>
+            <div class="form-group"><label>Energy Score (Samsung)</label><input type="number" min="1" max="100" id="syncEnergyScore"></div>
+          </div>
+          <div class="form-group-row">
+            <div class="form-group"><label>Current Weight (lbs)</label><input type="number" step="0.1" id="syncWeight"></div>
+            <div class="form-group"><label>Goal Weight (lbs)</label><input type="number" step="0.1" id="syncGoalWeight"></div>
+          </div>
+          <div class="form-group-row">
+            <div class="form-group"><label>Avg HR</label><input type="number" id="syncAvgHR"></div>
+            <div class="form-group"><label>Antioxidant Index</label><input type="number" id="syncAntioxidant"></div>
+          </div>
+          <div class="form-group-row">
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input type="checkbox" id="syncMeditation" style="width: 20px; height: 20px;">
+              <label style="margin: 0;">Completed Meditation?</label>
+            </div>
+          </div>
+          <button class="wp-btn wp-btn-next" onclick="saveSyncData()">SAVE METRICS</button>
+        </div>
+
+        <!-- Explort / Import -->
+        <div class="ai-sync-panel">
+          <h3 class="subsection-title">Gemini Communication Layer</h3>
+          <p class="section-desc" style="margin-bottom: 15px;">Generate the prompt to paste into Gemini. It contains your genome rules, schedule completion status, and recent metrics.</p>
+          <button class="start-workout-btn" onclick="generateAIPrompt()">📋 GENERATE & COPY PROMPT</button>
+          
+          <div style="margin-top: 30px;">
+            <p class="section-desc" style="margin-bottom: 10px;">Paste the JSON response from Gemini here to update your schedule and see feedback.</p>
+            <textarea id="aiImportPayload" rows="8" placeholder='{"newDays": {...}, "feedback": "...", "grade": "A-"}' style="width: 100%; font-family: 'JetBrains Mono', monospace; background: var(--bg-dark); color: var(--text-dim); border: 1px solid var(--border-color); padding: 10px;"></textarea>
+            <button class="start-workout-btn" style="margin-top: 10px; background: linear-gradient(90deg, #00f0ff, #b400ff);" onclick="importAIResponse()">📥 IMPORT RESPONSE</button>
+          </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="ai-sync-panel" id="aiInsightsPanel" style="grid-column: 1 / -1; display: none;">
+          <h3 class="subsection-title">Latest AI Protocol Analysis</h3>
+          <div id="aiGrade" style="font-size: 2rem; font-weight: 800; color: var(--accent-color); margin-bottom: 10px;"></div>
+          <div id="aiFeedback" style="color: var(--text-dim); line-height: 1.6; white-space: pre-wrap;"></div>
+        </div>
+      </div>
     </section>
   </main>
 
