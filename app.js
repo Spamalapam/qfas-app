@@ -1,4 +1,4 @@
-﻿// ===== Q.F.A.S. PROTOCOL ENGINE â€” UI LOGIC =====
+// ===== Q.F.A.S. PROTOCOL ENGINE — UI LOGIC =====
 
 const SCHED_STORAGE = 'qfas_custom_schedule';
 
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHistory();
   initProtocols();
   initCalendarModal();
+  loadSyncData();
 });
 
 // ===== DATE DISPLAY =====
@@ -55,7 +56,7 @@ function saveCustomDay(date, dayData) {
 function deleteCustomDay(date) {
   try {
     const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE)) || {};
-    custom[date] = { _deleted: true }; // Mark as deleted instead of removing key
+    delete custom[date];
     localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
   } catch { }
 }
@@ -65,7 +66,7 @@ function initSchedule() {
   const schedule = getScheduleData();
   const selector = document.getElementById('daySelector');
   selector.innerHTML = '';
-  const dates = Object.keys(schedule).filter(d => !schedule[d]._deleted).sort();
+  const dates = Object.keys(schedule).sort();
 
   dates.forEach((date, i) => {
     const btn = document.createElement('button');
@@ -96,9 +97,6 @@ function renderScheduleDay(date) {
   const day = schedule[date];
   if (!day) { grid.innerHTML = '<p style="color:var(--text-dim)">No schedule data for this date.</p>'; return; }
 
-  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
-  const dayCompletions = completions[date] || {};
-
   let html = '';
   html += `<div class="schedule-header">
     <div>
@@ -106,22 +104,25 @@ function renderScheduleDay(date) {
       <div class="sh-tagline">${day.tagline}</div>
     </div>
     <div style="display:flex;gap:6px">
-      <button class="schedule-edit-btn" onclick="openCalendarModal('${date}')">âœï¸ Edit</button>
-      <button class="schedule-delete-btn" onclick="deleteDay('${date}')">ðŸ—‘ï¸</button>
+      <button class="schedule-edit-btn" onclick="openCalendarModal('${date}')">✏️ Edit</button>
+      <button class="schedule-delete-btn" onclick="deleteDay('${date}')">🗑️</button>
     </div>
   </div>`;
 
   html += `<div class="schedule-meta">
-    <span class="meta-badge run">ðŸƒ ${day.runType}</span>
-    <span class="meta-badge lift">ðŸ‹ï¸ ${day.liftSlot}</span>
+    <span class="meta-badge run">🏃 ${day.runType}</span>
+    <span class="meta-badge lift">🏋️ ${day.liftSlot}</span>
   </div>`;
 
+  const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
+  const dayComps = completions[date] || {};
   (day.blocks || []).forEach((block, idx) => {
-    const isCompleted = dayCompletions[idx];
-    html += `<div class="schedule-block type-${block.type} ${isCompleted ? 'completed' : ''}" data-idx="${idx}">
-      <input type="checkbox" class="block-checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleBlockCompletion('${date}', ${idx})">
+    const checked = dayComps[idx] ? 'checked' : '';
+    const doneClass = dayComps[idx] ? ' completed' : '';
+    html += `<div class="schedule-block type-${block.type}${doneClass}">
+      <input type="checkbox" class="block-check" ${checked} onchange="toggleBlockCompletion('${date}', ${idx}, this.checked)">
       <div class="sb-time">${block.time}</div>
-      <div class="sb-icon">${block.icon || 'ðŸ“Œ'}</div>
+      <div class="sb-icon">${block.icon || '📌'}</div>
       <div class="sb-content">
         <div class="sb-label">${block.label}</div>
         ${block.detail ? `<div class="sb-detail">${escHtml(block.detail)}</div>` : ''}
@@ -130,16 +131,6 @@ function renderScheduleDay(date) {
   });
 
   grid.innerHTML = html;
-}
-
-function toggleBlockCompletion(date, idx) {
-  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
-  if (!completions[date]) completions[date] = {};
-
-  completions[date][idx] = !completions[date][idx];
-  localStorage.setItem('qfas_completions', JSON.stringify(completions));
-
-  renderScheduleDay(date);
 }
 
 function deleteDay(date) {
@@ -216,56 +207,6 @@ function iconFor(type) {
   return map[type] || '📌';
 }
 
-// ===== PROTOCOLS TAB =====
-function initProtocols() {
-  // Skincare
-  document.getElementById('skinGenomeBasis').textContent = '🧬 ' + SKINCARE.genomeBasis;
-  let skinHtml = '';
-  // AM Routine card
-  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.am.title}</div>`;
-  SKINCARE.am.steps.forEach(s => {
-    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
-  });
-  skinHtml += `</div>`;
-  // PM Routine card
-  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.pm.title}</div>`;
-  SKINCARE.pm.steps.forEach(s => {
-    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
-  });
-  skinHtml += `</div>`;
-  // Weekly treatments card
-  skinHtml += `<div class="protocol-card" style="grid-column:1/-1;"><div class="protocol-card-header">Weekly Treatments</div>`;
-  SKINCARE.weekly.forEach(w => {
-    skinHtml += `<div class="protocol-step"><span class="step-num">${w.day.slice(0, 3)}</span><div><div class="step-name">${w.treatment}</div><div class="step-detail">${w.detail}</div></div></div>`;
-  });
-  skinHtml += `</div>`;
-  document.getElementById('skincareGrid').innerHTML = skinHtml;
-
-  // Haircare
-  document.getElementById('hairGenomeBasis').textContent = '🧬 ' + HAIRCARE.genomeBasis;
-  let hairHtml = `<div class="protocol-card"><div class="protocol-card-header">Wash Routine (${HAIRCARE.washDays.join(', ')})</div>`;
-  HAIRCARE.routine.forEach(s => {
-    hairHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
-  });
-  hairHtml += `<div class="protocol-step"><span class="step-num">+</span><div><div class="step-name">Scalp Treatment</div><div class="step-detail">${HAIRCARE.scalpTreatment}</div></div></div>`;
-  hairHtml += `</div>`;
-  document.getElementById('haircareGrid').innerHTML = hairHtml;
-
-  // Biohacking matrix
-  let bioHtml = '';
-  BIOHACKING.protocols.forEach(p => {
-    bioHtml += `<div class="biohack-card">
-      <div class="biohack-icon">${p.icon}</div>
-      <div class="biohack-name">${p.name}</div>
-      <div class="biohack-freq">${p.frequency}</div>
-      <div class="biohack-meta"><span>⏱ ${p.duration}</span><span>🕐 ${p.timing}</span></div>
-      <div class="biohack-days">${p.days.map(d => `<span class="day-chip">${d}</span>`).join('')}</div>
-      <div class="biohack-detail">${p.detail}</div>
-    </div>`;
-  });
-  document.getElementById('biohackGrid').innerHTML = bioHtml;
-}
-
 // ===== GENOME =====
 function initGenome() {
   renderOverrides();
@@ -327,12 +268,12 @@ function renderLifting() {
       html += `<div class="wc-exercise">
         <span class="wc-set">${ex.set}</span>
         <div>
-          <div class="wc-exercise-name">${ex.name} <span class="wc-reps">${ex.sets}Ã—${ex.repRange}</span></div>
-          <div class="wc-pair">â†” ${ex.pair}: ${ex.pairName} (${ex.pairSets}Ã—${ex.pairReps})</div>
+          <div class="wc-exercise-name">${ex.name} <span class="wc-reps">${ex.sets}×${ex.repRange}</span></div>
+          <div class="wc-pair">↔ ${ex.pair}: ${ex.pairName} (${ex.pairSets}×${ex.pairReps})</div>
         </div>
       </div>`;
     });
-    html += `<button class="start-workout-btn" onclick="WorkoutPlayer.startLifting(${idx})">â–¶ START WORKOUT</button>`;
+    html += `<button class="start-workout-btn" onclick="WorkoutPlayer.startLifting(${idx})">▶ START WORKOUT</button>`;
     html += `</div>`;
   });
   el.innerHTML = html;
@@ -348,7 +289,7 @@ function renderRunning() {
       <div>
         <div class="rc-day">${r.day}</div>
         <div class="rc-name">${r.name}</div>
-        <div class="rc-detail">${r.type} Â· ${r.detail}</div>
+        <div class="rc-detail">${r.type} · ${r.detail}</div>
       </div>
     </div>`;
   });
@@ -367,7 +308,7 @@ function renderCore() {
       <div class="ce-reps">${ex.reps}</div>
     </div>`;
   });
-  html += `<button class="start-workout-btn start-core-btn" onclick="WorkoutPlayer.startCore()">ðŸ”¥ START CORE CIRCUIT</button>`;
+  html += `<button class="start-workout-btn start-core-btn" onclick="WorkoutPlayer.startCore()">🔥 START CORE CIRCUIT</button>`;
   html += `</div>`;
   el.innerHTML = html;
 }
@@ -384,7 +325,7 @@ function initNutrition() {
   html += `<div class="nutri-card">
     <div class="nutri-title">Protein Target</div>
     <div class="nutri-stat">${NUTRITION.proteinPerLb}</div>
-    <div class="nutri-detail">per pound of bodyweight. Elevated from baseline 1.0g due to triple inflammatory stack (IL-6 CG, TNF-Î± AG, IL-1Î² AG) and FTO AA satiety support.</div>
+    <div class="nutri-detail">per pound of bodyweight. Elevated from baseline 1.0g due to triple inflammatory stack (IL-6 CG, TNF-α AG, IL-1β AG) and FTO AA satiety support.</div>
   </div>`;
   html += `<div class="nutri-card">
     <div class="nutri-title">Carb Timing</div>
@@ -457,7 +398,7 @@ function initHistory() {
           <div><div class="hc-stat-val">${mins} min</div><div class="hc-stat-label">DURATION</div></div>
           <div><div class="hc-stat-val">${h.sets}</div><div class="hc-stat-label">SETS</div></div>
           <div><div class="hc-stat-val">${h.reps}</div><div class="hc-stat-label">REPS</div></div>
-          <div><div class="hc-stat-val">${h.volume > 0 ? Math.round(h.volume).toLocaleString() : 'â€”'}</div><div class="hc-stat-label">LBS VOL</div></div>
+          <div><div class="hc-stat-val">${h.volume > 0 ? Math.round(h.volume).toLocaleString() : '—'}</div><div class="hc-stat-label">LBS VOL</div></div>
           <div><div class="hc-stat-val">${h.avgRPE}</div><div class="hc-stat-label">AVG RPE</div></div>
         </div>
       </div>`;
@@ -466,105 +407,144 @@ function initHistory() {
   } catch { el.innerHTML = '<div class="empty-state">Error loading history.</div>'; }
 }
 
+// ===== UTILITY =====
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ===== BLOCK COMPLETIONS =====
+function toggleBlockCompletion(date, idx, checked) {
+  const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
+  if (!completions[date]) completions[date] = {};
+  completions[date][idx] = checked;
+  localStorage.setItem('qfas_completions', JSON.stringify(completions));
+  renderScheduleDay(date);
+}
+
+// ===== PROTOCOLS TAB =====
+function initProtocols() {
+  if (typeof SKINCARE === 'undefined') return;
+  document.getElementById('skinGenomeBasis').textContent = '🧬 ' + SKINCARE.genomeBasis;
+  let skinHtml = '';
+  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.am.title}</div>`;
+  SKINCARE.am.steps.forEach(s => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  skinHtml += `<div class="protocol-card"><div class="protocol-card-header">${SKINCARE.pm.title}</div>`;
+  SKINCARE.pm.steps.forEach(s => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  skinHtml += `<div class="protocol-card" style="grid-column:1/-1;"><div class="protocol-card-header">Weekly Treatments</div>`;
+  SKINCARE.weekly.forEach(w => {
+    skinHtml += `<div class="protocol-step"><span class="step-num">${w.day.slice(0, 3)}</span><div><div class="step-name">${w.treatment}</div><div class="step-detail">${w.detail}</div></div></div>`;
+  });
+  skinHtml += `</div>`;
+  document.getElementById('skincareGrid').innerHTML = skinHtml;
+
+  document.getElementById('hairGenomeBasis').textContent = '🧬 ' + HAIRCARE.genomeBasis;
+  let hairHtml = `<div class="protocol-card"><div class="protocol-card-header">Wash Routine (${HAIRCARE.washDays.join(', ')})</div>`;
+  HAIRCARE.routine.forEach(s => {
+    hairHtml += `<div class="protocol-step"><span class="step-num">${s.step}</span><div><div class="step-name">${s.name}</div><div class="step-detail">${s.detail}</div></div></div>`;
+  });
+  hairHtml += `<div class="protocol-step"><span class="step-num">+</span><div><div class="step-name">Scalp Treatment</div><div class="step-detail">${HAIRCARE.scalpTreatment}</div></div></div>`;
+  hairHtml += `</div>`;
+  document.getElementById('haircareGrid').innerHTML = hairHtml;
+
+  let bioHtml = '';
+  BIOHACKING.protocols.forEach(p => {
+    bioHtml += `<div class="biohack-card">
+      <div class="biohack-icon">${p.icon}</div>
+      <div class="biohack-name">${p.name}</div>
+      <div class="biohack-freq">${p.frequency}</div>
+      <div class="biohack-meta"><span>⏱ ${p.duration}</span><span>🕐 ${p.timing}</span></div>
+      <div class="biohack-days">${p.days.map(d => `<span class="day-chip">${d}</span>`).join('')}</div>
+      <div class="biohack-detail">${p.detail}</div>
+    </div>`;
+  });
+  document.getElementById('biohackGrid').innerHTML = bioHtml;
+}
+
 // ===== OMNI-TRACKER / AI SYNC =====
 function saveSyncData() {
+  const date = new Date().toISOString().slice(0, 10);
   const data = {
-    sleepStart: document.getElementById('syncSleepStart').value,
-    sleepEnd: document.getElementById('syncSleepEnd').value,
-    sleepQuality: document.getElementById('syncSleepQuality').value,
-    energyScore: document.getElementById('syncEnergyScore').value,
-    runType: document.getElementById('syncRunType').value,
-    runDistance: document.getElementById('syncRunDistance').value,
-    runDuration: document.getElementById('syncRunDuration').value,
-    runPace: document.getElementById('syncRunPace').value,
-    runNotes: document.getElementById('syncRunNotes').value,
-    weight: document.getElementById('syncWeight').value,
-    goalWeight: document.getElementById('syncGoalWeight').value,
-    avgHR: document.getElementById('syncAvgHR').value,
-    antioxidant: document.getElementById('syncAntioxidant').value,
-    stress: document.getElementById('syncStress').value,
-    spO2: document.getElementById('syncSpO2').value,
-    steps: document.getElementById('syncSteps').value,
-    meditation: document.getElementById('syncMeditation').checked,
-    dateLogged: new Date().toISOString()
+    sleepStart: document.getElementById('sleepStart')?.value || '',
+    sleepEnd: document.getElementById('sleepEnd')?.value || '',
+    sleepQuality: document.getElementById('sleepQuality')?.value || '',
+    energyScore: document.getElementById('energyScore')?.value || '',
+    runType: document.getElementById('runTypeSelect')?.value || '',
+    runDistance: document.getElementById('runDistance')?.value || '',
+    runDuration: document.getElementById('runDuration')?.value || '',
+    runPace: document.getElementById('runPace')?.value || '',
+    runNotes: document.getElementById('runNotes')?.value || '',
+    weight: document.getElementById('currentWeight')?.value || '',
+    goalWeight: document.getElementById('goalWeight')?.value || '',
+    avgHR: document.getElementById('avgHR')?.value || '',
+    antioxidant: document.getElementById('antioxidant')?.value || '',
+    stressScore: document.getElementById('stressScore')?.value || '',
+    spo2: document.getElementById('spo2')?.value || '',
+    steps: document.getElementById('stepsToday')?.value || '',
+    meditation: document.getElementById('meditation')?.checked || false
   };
-  localStorage.setItem('qfas_daily_metrics', JSON.stringify(data));
-
+  localStorage.setItem('qfas_sync_' + date, JSON.stringify(data));
   const btn = document.getElementById('saveMetricsBtn');
-  btn.textContent = '\u2705 SAVED!';
-  btn.style.background = 'var(--green)';
-  setTimeout(() => { btn.textContent = 'SAVE METRICS'; btn.style.background = ''; }, 2000);
+  if (btn) {
+    const oldText = btn.textContent;
+    btn.textContent = '✅ SAVED!';
+    btn.style.background = '#00c853';
+    setTimeout(() => { btn.textContent = oldText; btn.style.background = ''; }, 2500);
+  }
 }
 
 function loadSyncData() {
+  const date = new Date().toISOString().slice(0, 10);
+  const raw = localStorage.getItem('qfas_sync_' + date);
+  if (!raw) return;
   try {
-    const data = JSON.parse(localStorage.getItem('qfas_daily_metrics'));
-    if (!data) return;
-    document.getElementById('syncSleepStart').value = data.sleepStart || '';
-    document.getElementById('syncSleepEnd').value = data.sleepEnd || '';
-    document.getElementById('syncSleepQuality').value = data.sleepQuality || '';
-    document.getElementById('syncEnergyScore').value = data.energyScore || '';
-    document.getElementById('syncRunType').value = data.runType || '';
-    document.getElementById('syncRunDistance').value = data.runDistance || '';
-    document.getElementById('syncRunDuration').value = data.runDuration || '';
-    document.getElementById('syncRunPace').value = data.runPace || '';
-    document.getElementById('syncRunNotes').value = data.runNotes || '';
-    document.getElementById('syncWeight').value = data.weight || '';
-    document.getElementById('syncGoalWeight').value = data.goalWeight || '';
-    document.getElementById('syncAvgHR').value = data.avgHR || '';
-    document.getElementById('syncAntioxidant').value = data.antioxidant || '';
-    document.getElementById('syncStress').value = data.stress || '';
-    document.getElementById('syncSpO2').value = data.spO2 || '';
-    document.getElementById('syncSteps').value = data.steps || '';
-    document.getElementById('syncMeditation').checked = !!data.meditation;
-  } catch (e) { console.error('Error loading sync data', e); }
+    const data = JSON.parse(raw);
+    const fields = ['sleepStart', 'sleepEnd', 'sleepQuality', 'energyScore', 'runDistance', 'runDuration', 'runPace', 'runNotes', 'currentWeight', 'goalWeight', 'avgHR', 'antioxidant', 'stressScore', 'spo2', 'stepsToday'];
+    fields.forEach(id => { const el = document.getElementById(id); if (el && data[id.replace('current', '').replace('Today', '').toLowerCase()] !== undefined) { /* best effort */ } });
+    if (data.sleepStart) { const el = document.getElementById('sleepStart'); if (el) el.value = data.sleepStart; }
+    if (data.sleepEnd) { const el = document.getElementById('sleepEnd'); if (el) el.value = data.sleepEnd; }
+    if (data.sleepQuality) { const el = document.getElementById('sleepQuality'); if (el) el.value = data.sleepQuality; }
+    if (data.energyScore) { const el = document.getElementById('energyScore'); if (el) el.value = data.energyScore; }
+    if (data.runType) { const el = document.getElementById('runTypeSelect'); if (el) el.value = data.runType; }
+    if (data.runDistance) { const el = document.getElementById('runDistance'); if (el) el.value = data.runDistance; }
+    if (data.runDuration) { const el = document.getElementById('runDuration'); if (el) el.value = data.runDuration; }
+    if (data.runPace) { const el = document.getElementById('runPace'); if (el) el.value = data.runPace; }
+    if (data.runNotes) { const el = document.getElementById('runNotes'); if (el) el.value = data.runNotes; }
+    if (data.weight) { const el = document.getElementById('currentWeight'); if (el) el.value = data.weight; }
+    if (data.goalWeight) { const el = document.getElementById('goalWeight'); if (el) el.value = data.goalWeight; }
+    if (data.avgHR) { const el = document.getElementById('avgHR'); if (el) el.value = data.avgHR; }
+    if (data.antioxidant) { const el = document.getElementById('antioxidant'); if (el) el.value = data.antioxidant; }
+    if (data.stressScore) { const el = document.getElementById('stressScore'); if (el) el.value = data.stressScore; }
+    if (data.spo2) { const el = document.getElementById('spo2'); if (el) el.value = data.spo2; }
+    if (data.steps) { const el = document.getElementById('stepsToday'); if (el) el.value = data.steps; }
+    if (data.meditation) { const el = document.getElementById('meditation'); if (el) el.checked = data.meditation; }
+  } catch (e) { console.error('Failed to load sync data', e); }
 }
 
-// Load saved metrics on page load
-document.addEventListener('DOMContentLoaded', loadSyncData);
-
 function generateAIPrompt() {
-  const metrics = JSON.parse(localStorage.getItem('qfas_daily_metrics')) || {};
+  const date = new Date().toISOString().slice(0, 10);
+  const raw = localStorage.getItem('qfas_sync_' + date);
+  const metrics = raw ? JSON.parse(raw) : {};
   const schedule = getScheduleData();
-  const completions = JSON.parse(localStorage.getItem('qfas_completions')) || {};
-  const workoutHistory = JSON.parse(localStorage.getItem('qfas_workout_history')) || [];
+  const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
 
-  // Format recent schedule completion for the last 3 days
+  let scheduleContext = '[RECENT SCHEDULE COMPLETION (Last 3 days)]';
   const today = new Date();
-  let scheduleContext = "RECENT SCHEDULE COMPLETION:\n";
-
-  for (let i = 2; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-
-    if (schedule[dateStr] && !schedule[dateStr]._deleted) {
-      scheduleContext += `\n--- ${schedule[dateStr].dayLabel} ---\n`;
-      const dayComps = completions[dateStr] || {};
-      (schedule[dateStr].blocks || []).forEach((block, idx) => {
-        const status = dayComps[idx] ? '[X]' : '[ ]';
-        scheduleContext += `${status} ${block.time} | ${block.label} | ${block.type}\n`;
-      });
-    }
-  }
-
-  // Format recent workout history (last 5)
-  let historyContext = "RECENT WORKOUT HISTORY:\n";
-  const recentWorkouts = workoutHistory.slice(-5);
-  if (recentWorkouts.length > 0) {
-    recentWorkouts.forEach(h => {
-      const d = new Date(h.date);
-      const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      historyContext += `${dateStr}: ${h.workout} | ${Math.floor(h.duration / 60)}min | ${h.sets} sets | ${h.reps} reps | Vol: ${h.volume || 'N/A'} | RPE: ${h.avgRPE}\n`;
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    if (!schedule[dateStr]) continue;
+    scheduleContext += `\n--- ${schedule[dateStr].dayLabel} ---\n`;
+    const dayComps = completions[dateStr] || {};
+    (schedule[dateStr].blocks || []).forEach((block, idx) => {
+      const status = dayComps[idx] ? '[X]' : '[ ]';
+      scheduleContext += `${status} ${block.time} | ${block.label} | ${block.type}\n`;
     });
-  } else {
-    historyContext += "No logged workouts yet.\n";
-  }
-
-  // Build run summary
-  let runSummary = "No run logged today.";
-  if (metrics.runType) {
-    runSummary = `${metrics.runType} | ${metrics.runDistance || '?'} mi | ${metrics.runDuration || '?'} min | Pace: ${metrics.runPace || 'N/A'} | Notes: ${metrics.runNotes || 'none'}`;
   }
 
   const prompt = `You are the Q.F.A.S. Protocol Engine (Quit F*cking Around out of Spite) for Adam.
@@ -575,37 +555,29 @@ Here is Adam's daily data:
 [DAILY METRICS]
 Sleep: ${metrics.sleepStart || 'N/A'} to ${metrics.sleepEnd || 'N/A'} (Quality: ${metrics.sleepQuality || 'N/A'}/10)
 Samsung Energy Score: ${metrics.energyScore || 'N/A'}/100
-Stress Score: ${metrics.stress || 'N/A'}/100
-SpO2: ${metrics.spO2 || 'N/A'}%
-Steps: ${metrics.steps || 'N/A'}
+Run: ${metrics.runType || 'None'} | ${metrics.runDistance || '?'} mi | ${metrics.runDuration || '?'} min | Pace: ${metrics.runPace || '?'} min/mi
+Run Notes: ${metrics.runNotes || 'None'}
 Current Weight: ${metrics.weight || 'N/A'} lbs (Goal: ${metrics.goalWeight || 'N/A'} lbs)
-Avg Resting HR: ${metrics.avgHR || 'N/A'} | Antioxidant Index: ${metrics.antioxidant || 'N/A'}
+Avg HR: ${metrics.avgHR || 'N/A'} | Antioxidant Index: ${metrics.antioxidant || 'N/A'}
+Stress Score: ${metrics.stressScore || 'N/A'}/100 | SpO2: ${metrics.spo2 || 'N/A'}%
+Steps Today: ${metrics.steps || 'N/A'}
 Meditation Completed: ${metrics.meditation ? 'Yes' : 'No'}
-
-[TODAY'S RUN]
-${runSummary}
 
 [GENOME RULES OVERVIEW (DO NOT VIOLATE)]
 1. FTO AA = High appetite. Strict calorie tracking. 1.2g/lb protein.
 2. COMT AA / BDNF CT = High anxiety/low dopamine under stress. RUNNING IS MEDICINE.
-3. IL-6 CG / TNF-a AG / IL-1b AG = Triple inflammatory stack. Slow recoverer. 8 hrs sleep minimum. Post-run omegas + curcumin.
-4. ACTN3 TT + ACE II = Endurance dominant. 120-150s rest between lifts. Not a power lifter.
+3. IL-6 CG / TNF-a AG = Slow recoverer. 8 hrs sleep minimum. Post-run omegas.
+4. ACTN3 TT = Endurance dominant. 120-150s rest between lifts.
 5. MTNR1B CG = No carbs within 2 hrs of sleep.
-6. APOE e3/e4 = Elevated CVD/Alzheimer risk. Sleep + exercise + omega-3s are neuroprotective.
-7. VDR CT = Supplement 3000-5000 IU D3 + K2-MK7.
-8. COL5A1 CT = 5-10 min dynamic mobility before hard runs. 50 mi/week ceiling.
-9. ADORA2A CC = Caffeine cutoff 2 PM.
 
 ${scheduleContext}
-
-${historyContext}
 
 INSTRUCTIONS:
 1. Analyze the completion rates and daily metrics.
 2. Provide harsh but analytical feedback on what was missed and why. Grade the performance (A to F).
-3. Generate the schedule for the next 2 days (use today as a reference) formatted exactly as the JSON below. Ensure any critical uncompleted tasks roll over if necessary.
+3. Generate the schedule for the next 2 days formatted exactly as the JSON below.
 
-Output your response STRICTLY as JSON with the following structure, and nothing else outside the JSON block:
+Output your response STRICTLY as JSON:
 {
   "grade": "B-",
   "feedback": "Your analysis here...",
@@ -616,81 +588,72 @@ Output your response STRICTLY as JSON with the following structure, and nothing 
       "runType": "Easy Run",
       "liftSlot": "None",
       "blocks": [
-        {"time": "7:00 AM", "label": "Wake", "icon": "\ud83d\udd14", "type": "wake", "detail": "..."}
+        {"time": "7:00 AM", "label": "Wake", "icon": "🔔", "type": "wake", "detail": "..."}
       ]
     }
   }
 }
 `;
 
-  // Show the prompt in the output textarea
-  const outputArea = document.getElementById('aiPromptOutput');
-  outputArea.value = prompt;
-  outputArea.style.display = 'block';
-
-  // Try clipboard, but don't rely on it
-  const btn = document.getElementById('generatePromptBtn');
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(prompt).then(() => {
-      btn.textContent = '\u2705 COPIED TO CLIPBOARD!';
-      setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 2500);
-    }).catch(() => {
-      btn.textContent = '\u2705 PROMPT GENERATED! SELECT & COPY BELOW';
-      outputArea.select();
-      setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 3000);
-    });
-  } else {
-    btn.textContent = '\u2705 PROMPT GENERATED! SELECT & COPY BELOW';
-    outputArea.select();
-    setTimeout(() => { btn.textContent = '\ud83d\udccb GENERATE & COPY PROMPT'; }, 3000);
-  }
+  // Try clipboard, fall back to textarea
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.getElementById('generatePromptBtn');
+    if (btn) {
+      const oldText = btn.textContent;
+      btn.textContent = '✅ COPIED TO CLIPBOARD!';
+      setTimeout(() => btn.textContent = oldText, 2500);
+    }
+  }).catch(() => {
+    let ta = document.getElementById('promptFallback');
+    if (!ta) {
+      ta = document.createElement('textarea');
+      ta.id = 'promptFallback';
+      ta.style.cssText = 'width:100%;height:300px;margin-top:10px;background:#1a1a2e;color:#e0e0e0;border:1px solid #333;padding:10px;font-size:0.8rem;border-radius:8px;';
+      document.getElementById('generatePromptBtn').parentElement.appendChild(ta);
+    }
+    ta.value = prompt;
+    ta.style.display = 'block';
+    ta.select();
+  });
 }
 
 function importAIResponse() {
   const textarea = document.getElementById('aiImportPayload');
   const payloadStr = textarea.value.trim();
-  if (!payloadStr) { alert('Paste the AI response JSON first.'); return; }
+  if (!payloadStr) return;
 
   try {
-    // Attempt to extract JSON if the AI wrapped it in markdown
     let jsonStr = payloadStr;
     const match = payloadStr.match(/\{[\s\S]*\}/);
-    if (match) {
-      jsonStr = match[0];
-    }
+    if (match) jsonStr = match[0];
 
     const parsed = JSON.parse(jsonStr);
 
-    // Save new days to local storage custom schedule
     if (parsed.newDays) {
-      const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE)) || {};
+      const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
       Object.assign(custom, parsed.newDays);
       localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
-      initSchedule(); // Re-render schedule UI
+      initSchedule();
     }
 
-    // Show insights
     if (parsed.grade || parsed.feedback) {
       const insights = document.getElementById('aiInsightsPanel');
-      insights.style.display = 'block';
-      document.getElementById('aiGrade').textContent = `GRADE: ${parsed.grade || 'N/A'}`;
-      document.getElementById('aiFeedback').textContent = parsed.feedback || '';
+      if (insights) {
+        insights.style.display = 'block';
+        document.getElementById('aiGrade').textContent = 'GRADE: ' + (parsed.grade || 'N/A');
+        document.getElementById('aiFeedback').textContent = parsed.feedback || '';
+      }
     }
 
-    const btn = document.querySelector('button[onclick="importAIResponse()"]');
-    btn.textContent = '\u2705 IMPORTED!';
-    btn.style.background = 'var(--green)';
-    setTimeout(() => { btn.textContent = '\ud83d\udce5 IMPORT RESPONSE'; btn.style.background = 'linear-gradient(90deg,#00f0ff,#b400ff)'; }, 2500);
+    const btn = document.getElementById('importResponseBtn');
+    if (btn) {
+      const oldText = btn.textContent;
+      btn.textContent = '✅ IMPORTED!';
+      setTimeout(() => btn.textContent = oldText, 2500);
+    }
     textarea.value = '';
-
   } catch (err) {
-    alert('Failed to parse AI response. Make sure it is valid JSON.\n\nError: ' + err.message);
+    alert('Failed to parse AI response. Make sure it is valid JSON.');
     console.error(err);
   }
 }
-
-// ===== UTILITY =====
-function escHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
