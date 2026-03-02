@@ -91,13 +91,20 @@
       </div>
       <div class="schedule-toolbar">
         <button class="toolbar-btn rescue-btn" onclick="rescheduleMyDay()"
-          title="Generate an AI prompt to rebuild today's schedule based on current time">🔄 Reschedule My Day</button>
+          title="Reshuffle today's schedule starting from right now, prioritized by genome importance">🔄 Reschedule
+          From Now</button>
         <button class="toolbar-btn toggle-work-btn" onclick="toggleWorkToday()" id="toggleWorkBtn">🏖️ No Work
           Today</button>
+        <button class="toolbar-btn" onclick="resetDayToDefault()"
+          title="Reset this day back to the default protocol schedule">↩️ Reset to Default</button>
       </div>
 
       <div class="quick-add-panel" id="quickAddPanel">
         <div class="quick-add-label">⚡ Quick Add:</div>
+        <button class="quick-add-btn" onclick="quickAddBlock('run')">🏃 Run</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('workout')">🏋️ Workout</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('meal')">🍗 Meal</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('meditation')">🧘 Meditation</button>
         <button class="quick-add-btn" onclick="quickAddBlock('redlight')">🔴 Red Light</button>
         <button class="quick-add-btn" onclick="quickAddBlock('wimhof')">🌬️ Wim Hof</button>
         <button class="quick-add-btn" onclick="quickAddBlock('coldshower')">🧊 Cold Shower</button>
