@@ -1849,3 +1849,88 @@ footer {
 .schedule-block.type-biohack {
   border-left: 3px solid #00f0ff;
 }
+
+/* Schedule toolbar */
+.schedule-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.toolbar-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.08);
+}
+
+.rescue-btn {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05));
+  border-color: var(--cyan);
+}
+
+/* Quick Add */
+.quick-add-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.quick-add-label {
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--cyan);
+  margin-right: 4px;
+}
+
+.quick-add-btn {
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-dark);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.quick-add-btn:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.1);
+  transform: scale(1.05);
+}
+
+/* Completed block */
+.schedule-block.completed {
+  opacity: 0.55;
+}
+
+.schedule-block.completed .sb-label {
+  text-decoration: line-through;
+}
+
+.block-check {
+  accent-color: var(--cyan);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+}

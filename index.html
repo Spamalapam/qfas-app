@@ -89,6 +89,24 @@
         <div class="day-selector" id="daySelector"></div>
         <button class="add-day-btn" id="addDayBtn" title="Add Day">+ Add Day</button>
       </div>
+      <div class="schedule-toolbar">
+        <button class="toolbar-btn rescue-btn" onclick="rescheduleMyDay()"
+          title="Generate an AI prompt to rebuild today's schedule based on current time">🔄 Reschedule My Day</button>
+        <button class="toolbar-btn toggle-work-btn" onclick="toggleWorkToday()" id="toggleWorkBtn">🏖️ No Work
+          Today</button>
+      </div>
+
+      <div class="quick-add-panel" id="quickAddPanel">
+        <div class="quick-add-label">⚡ Quick Add:</div>
+        <button class="quick-add-btn" onclick="quickAddBlock('redlight')">🔴 Red Light</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('wimhof')">🌬️ Wim Hof</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('coldshower')">🧊 Cold Shower</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('sauna')">🧖 Sauna</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('hottub')">♨️ Hot Tub</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('skinam')">🧴 Skincare AM</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('skinpm')">🧴 Skincare PM</button>
+        <button class="quick-add-btn" onclick="quickAddBlock('hairwash')">💇 Hair Wash</button>
+      </div>
 
       <div class="schedule-grid" id="scheduleGrid"></div>
     </section>

@@ -657,3 +657,162 @@ function importAIResponse() {
     console.error(err);
   }
 }
+
+// ===== RESCHEDULE MY DAY (AI-powered) =====
+function rescheduleMyDay() {
+  const date = currentScheduleDate || new Date().toISOString().slice(0, 10);
+  const schedule = getScheduleData();
+  const day = schedule[date];
+  const now = new Date();
+  const currentTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
+  const dayComps = completions[date] || {};
+
+  let blockStatus = '';
+  if (day && day.blocks) {
+    day.blocks.forEach((block, idx) => {
+      const status = dayComps[idx] ? '[DONE]' : '[MISSED]';
+      blockStatus += `${status} ${block.time} | ${block.label} | ${block.type}\n`;
+    });
+  }
+
+  const prompt = `You are the Q.F.A.S. Protocol Engine. Adam needs his schedule REBUILT for today (${date}).
+
+SITUATION:
+- Current time: ${currentTime}
+- He woke up LATER than planned
+- Some blocks may need to be dropped, merged, or shifted
+${day ? `- Original schedule was: "${day.tagline}" — ${day.runType}, Lift: ${day.liftSlot}\n` : ''}
+BLOCKS STATUS:
+${blockStatus || 'No blocks yet for this day.'}
+
+GENOME RULES (DO NOT VIOLATE):
+1. FTO AA = Must eat before intense exercise (no fasted HIIT)
+2. ACTN3 TT = 120-150 sec rest between lift supersets
+3. IL-6/TNF-a = Post-exercise nutrition within 30 min
+4. MTNR1B CG = No carbs within 2 hrs of sleep
+5. COMT AA = Meditation + runs are non-negotiable for mental health
+
+INCLUDE THESE in the rebuilt day (if not already completed):
+- Red Light Therapy (10 min, any time before SPF)
+- AM + PM Skincare routines
+- Cold Shower (2-3 min at end of shower)
+- Wim Hof Breathing (if before workout)
+- Sauna (if post-lift day)
+- The scheduled run and workout if applicable
+- All nutrition blocks
+
+OUTPUT STRICTLY as JSON:
+{
+  "newDays": {
+    "${date}": {
+      "dayLabel": "${day ? day.dayLabel : 'Today'}",
+      "tagline": "REBUILT: [your tagline]",
+      "runType": "[run type or REST]",
+      "liftSlot": "[workout or None]",
+      "blocks": [
+        {"time": "HH:MM AM/PM", "label": "Block Name", "icon": "emoji", "type": "type", "detail": "Research-backed detail with genome rationale"}
+      ]
+    }
+  }
+}
+`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.querySelector('.rescue-btn');
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = '✅ COPIED! Paste into Gemini';
+      setTimeout(() => btn.textContent = old, 3000);
+    }
+  }).catch(() => {
+    let ta = document.getElementById('promptFallback');
+    if (!ta) {
+      ta = document.createElement('textarea');
+      ta.id = 'promptFallback';
+      ta.style.cssText = 'width:100%;height:300px;margin-top:10px;background:#1a1a2e;color:#e0e0e0;border:1px solid #333;padding:10px;font-size:0.8rem;border-radius:8px;';
+      document.querySelector('.schedule-toolbar').parentElement.appendChild(ta);
+    }
+    ta.value = prompt;
+    ta.style.display = 'block';
+    ta.select();
+  });
+}
+
+// ===== TOGGLE WORK TODAY =====
+function toggleWorkToday() {
+  const date = currentScheduleDate || new Date().toISOString().slice(0, 10);
+  const schedule = getScheduleData();
+  const day = schedule[date];
+  if (!day || !day.blocks) return;
+
+  const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
+  const hasWork = day.blocks.some(b => b.type === 'work');
+
+  if (hasWork) {
+    // Remove work blocks
+    const filtered = day.blocks.filter(b => b.type !== 'work');
+    if (!custom[date]) custom[date] = { ...day };
+    custom[date].blocks = filtered;
+    custom[date].tagline = (day.tagline || '') + ' (OFF DAY)';
+    localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+    document.getElementById('toggleWorkBtn').textContent = '🏥 Add Work Back';
+  } else {
+    // Restore work blocks from original SCHEDULE
+    if (typeof SCHEDULE !== 'undefined' && SCHEDULE[date]) {
+      const origWork = SCHEDULE[date].blocks.filter(b => b.type === 'work');
+      if (!custom[date]) custom[date] = { ...day };
+      custom[date].blocks = [...day.blocks, ...origWork].sort((a, b) => {
+        const ta = a.time.replace(/–.*/, '').trim();
+        const tb = b.time.replace(/–.*/, '').trim();
+        return ta.localeCompare(tb);
+      });
+      custom[date].tagline = (day.tagline || '').replace(' (OFF DAY)', '');
+      localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+      document.getElementById('toggleWorkBtn').textContent = '🏖️ No Work Today';
+    }
+  }
+  renderScheduleDay(date);
+}
+
+// ===== QUICK ADD BLOCKS =====
+const QUICK_BLOCKS = {
+  redlight: { time: 'NOW', label: 'Red Light Therapy', icon: '🔴', type: 'biohack', detail: 'WHY: Red/near-infrared (630-850nm) boosts mitochondrial ATP by 15-20% (Hamblin, BBA 2018). Your VDR CT = reduced vitamin D receptor, so red light compensates by stimulating collagen without UV. 10-15 min face + chest. Do BEFORE applying SPF.' },
+  wimhof: { time: 'NOW', label: 'Wim Hof Breathing', icon: '🌬️', type: 'biohack', detail: 'WHY: Your COMT AA = slow catechol breakdown = elevated baseline cortisol. Wim Hof alkalizes blood pH and paradoxically lowers cortisol over time (Kox et al., PNAS 2014). 3 rounds: 30 power breaths → exhale hold (1-2 min) → 15 sec recovery breath × 3. Best done before exercise for max BDNF CT stacking.' },
+  coldshower: { time: 'NOW', label: 'Cold Shower', icon: '🧊', type: 'biohack', detail: 'WHY: Cold (50-60°F, 2-3 min) triggers 200-300% norepinephrine spike (Shevchuk, Med Hypotheses 2008). For your COMT AA, this compensates slow catechol metabolism = better focus + mood. Your IL-6 CG = post-exercise inflammation; cold limits inflammatory cascade. Start warm, finish cold.' },
+  sauna: { time: 'NOW', label: 'Wet Sauna', icon: '🧖', type: 'biohack', detail: 'WHY POST-LIFT: 150-180°F triggers heat shock proteins (HSP70/90) + GH spike 200-300% (Leppäluoto et al., 1986). Men 30-35: GH declines ~14%/decade after 30 — sauna combats this. Your IL-6/TNF-a stack: regular sauna cuts CRP by 30% in 4 weeks (Laukkanen et al., JAMA 2015). 15-20 min. HYDRATE: 16oz water before, electrolytes after.' },
+  hottub: { time: 'NOW', label: 'Hot Tub Recovery', icon: '♨️', type: 'biohack', detail: 'WHY: ~100-104°F full-body soak. Parasympathetic activation (vagus nerve stimulation), joint relief, muscle relaxation. Best on rest or Sunday. Your COMT AA benefits from parasympathetic dominance. Do NOT combine with cold shower same session — opposing signals cancel benefits. 15-20 min max.' },
+  skinam: { time: 'NOW', label: 'AM Skincare', icon: '🧴', type: 'skincare', detail: 'GENOME-DRIVEN: Gentle cleanser → Vitamin C 15-20% (compensates GSTP1 AG moderate glutathione detox) → Ceramide moisturizer (repairs IL-6/TNF-a inflammatory barrier damage) → SPF 30+ (VDR CT = protect remaining D receptor function). Men 30-35 lose ~1% collagen/year; this routine halves that rate.' },
+  skinpm: { time: 'NOW', label: 'PM Skincare', icon: '🧴', type: 'skincare', detail: 'PM PROTOCOL: Oil cleanser (removes SPF/sebum) → Gentle cleanser (double cleanse) → Active: Retinol 0.3% Tue/Thu nights (collagen + cell turnover), Niacinamide 5% other nights (barrier repair + anti-inflammatory for IL-6/TNF-a markers). Heavy moisturizer — your VDR CT = dry skin tendency. Slug with Aquaphor if needed.' },
+  hairwash: { time: 'NOW', label: 'Hair Wash Day', icon: '💇', type: 'haircare', detail: 'GENOME: IL-6 CG + TNF-a AG = scalp inflammation risk. SULFATE-FREE only — sulfates strip protective oils and worsen inflammatory scalp. Gentle shampoo → Conditioner 2-3 min (5 min deep on Fri/Sun) → 1-2 min scalp massage (increases blood flow). Pat dry only, no heat. Scheduled: Tue/Fri/Sun wash days.' }
+};
+
+function quickAddBlock(type) {
+  const date = currentScheduleDate || new Date().toISOString().slice(0, 10);
+  const schedule = getScheduleData();
+  const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
+  const day = schedule[date] || { dayLabel: date, tagline: 'CUSTOM DAY', runType: 'TBD', liftSlot: 'TBD', blocks: [] };
+
+  const preset = QUICK_BLOCKS[type];
+  if (!preset) return;
+
+  // Set time to current time
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const block = { ...preset, time: timeStr };
+
+  if (!custom[date]) custom[date] = { ...day, blocks: [...(day.blocks || [])] };
+  custom[date].blocks.push(block);
+  localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+  renderScheduleDay(date);
+
+  // Flash the button
+  const btns = document.querySelectorAll('.quick-add-btn');
+  btns.forEach(btn => {
+    if (btn.textContent.includes(preset.label.split(' ')[0]) || btn.textContent.includes(preset.icon)) {
+      btn.style.background = 'rgba(0, 240, 255, 0.3)';
+      btn.style.borderColor = 'var(--cyan)';
+      setTimeout(() => { btn.style.background = ''; btn.style.borderColor = ''; }, 1000);
+    }
+  });
+}
