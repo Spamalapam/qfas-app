@@ -739,59 +739,68 @@ function rescheduleMyDay() {
     }
   });
 
-  // Mark completed blocks as-is, keep their times
-  // Sort remaining by priority (P1 first, then P2, etc.)
-  remaining.sort((a, b) => {
-    const pa = (BLOCK_PRIORITY[a.type] || { priority: 3 }).priority;
-    const pb = (BLOCK_PRIORITY[b.type] || { priority: 3 }).priority;
-    if (pa !== pb) return pa - pb;
-    // Within same priority, keep original time order
-    return timeToMinutes(a.time) - timeToMinutes(b.time);
-  });
+  // Keep blocks in ORIGINAL order (preserves logical day flow: fuel→run→meal→lift→sauna→dinner→sleep)
+  // Do NOT sort by priority — priority is only used to decide what to DROP if time is tight
 
-  // Calculate available time: from NOW to bedtime (find sleep block or default 10 PM)
+  // Calculate total time needed
+  let totalNeeded = 0;
+  remaining.forEach(b => { totalNeeded += getBlockDuration(b) + 5; }); // 5 min buffer each
+
+  // Calculate available time: from NOW to bedtime
   const sleepBlock = day.blocks.find(b => b.type === 'sleep');
-  const bedtime = sleepBlock ? timeToMinutes(sleepBlock.time) : 22 * 60; // 10 PM default
+  const bedtime = sleepBlock ? timeToMinutes(sleepBlock.time) : 22 * 60;
   let availableMin = bedtime - nowMinutes;
   if (availableMin < 30) { alert('Not enough time left today to reschedule.'); return; }
 
-  // Build new schedule starting from NOW
-  const newBlocks = [];
-  let cursor = nowMinutes + 5; // Start 5 min from now
+  // If we don't have enough time, drop lowest-priority blocks first
+  let kept = [...remaining];
+  if (totalNeeded > availableMin) {
+    // Sort by priority DESCENDING (P4 first to drop)
+    const toDrop = [...remaining].sort((a, b) => {
+      const pa = (BLOCK_PRIORITY[a.type] || { priority: 3 }).priority;
+      const pb = (BLOCK_PRIORITY[b.type] || { priority: 3 }).priority;
+      return pb - pa; // Higher priority number = dropped first
+    });
 
-  // Add completed blocks first (keep original times)
+    let excess = totalNeeded - availableMin;
+    const droppedIndices = new Set();
+    for (const block of toDrop) {
+      if (excess <= 0) break;
+      const pri = (BLOCK_PRIORITY[block.type] || { priority: 3 }).priority;
+      if (pri >= 3) { // Only drop P3/P4
+        excess -= getBlockDuration(block) + 5;
+        droppedIndices.add(block.originalIdx);
+      }
+    }
+    kept = remaining.filter(b => !droppedIndices.has(b.originalIdx));
+  }
+
+  // Build new schedule: keep original order, assign new times from NOW
+  const newBlocks = [];
+  let cursor = nowMinutes + 5;
+
+  // Add completed blocks (keep original times)
   completed.forEach(b => newBlocks.push(b));
 
-  // Schedule remaining blocks by priority
-  remaining.forEach(block => {
-    const pri = (BLOCK_PRIORITY[block.type] || { priority: 3 }).priority;
+  // Assign new sequential times to remaining blocks (in original order)
+  kept.forEach(block => {
     let dur = getBlockDuration(block);
-
-    // If we're running low on time, shorten P4 items or skip them
     const timeLeft = bedtime - cursor;
-    if (timeLeft <= 0) return; // No more time
+    if (timeLeft <= 0) return;
 
-    if (pri === 4 && timeLeft < dur + 30) {
-      // Shorten flexible items if tight
-      dur = Math.min(dur, Math.max(10, Math.floor(timeLeft / 3)));
+    // Shorten P4 items if tight
+    const pri = (BLOCK_PRIORITY[block.type] || { priority: 3 }).priority;
+    if (pri === 4 && timeLeft < dur + 20) {
+      dur = Math.min(dur, Math.max(10, Math.floor(timeLeft / 2)));
     }
+    if (timeLeft < dur) return; // Can't fit
 
-    if (timeLeft < dur && pri >= 3) {
-      // Skip P3/P4 items if there's not enough time
-      return;
-    }
-
-    // Assign new time
     const startTime = minutesToTime(cursor);
     const endTime = minutesToTime(cursor + dur);
     const newTimeStr = dur >= 10 ? `${startTime.replace(/ (AM|PM)/, '')}–${endTime}` : startTime;
 
-    newBlocks.push({
-      ...block,
-      time: newTimeStr
-    });
-
-    cursor += dur + 5; // 5 min buffer between blocks
+    newBlocks.push({ ...block, time: newTimeStr });
+    cursor += dur + 5;
   });
 
   // Always ensure lights-out block is at the end
