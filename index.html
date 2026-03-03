@@ -90,13 +90,16 @@
         <button class="add-day-btn" id="addDayBtn" title="Add Day">+ Add Day</button>
       </div>
       <div class="schedule-toolbar">
-        <button class="toolbar-btn rescue-btn" onclick="rescheduleMyDay()"
-          title="Reshuffle today's schedule starting from right now, prioritized by genome importance">🔄 Reschedule
-          From Now</button>
+        <button class="toolbar-btn rescue-btn" onclick="rescheduleMyDay()" title="Local genome-priority reshuffle">🔄
+          Local Reshuffle</button>
+        <button class="toolbar-btn ai-btn" onclick="aiOptimizeSchedule()"
+          title="AI-powered schedule optimization (Qwen 3.5)">🧠 AI Optimize</button>
         <button class="toolbar-btn toggle-work-btn" onclick="toggleWorkToday()" id="toggleWorkBtn">🏖️ No Work
           Today</button>
-        <button class="toolbar-btn" onclick="resetDayToDefault()"
-          title="Reset this day back to the default protocol schedule">↩️ Reset to Default</button>
+        <button class="toolbar-btn" onclick="resetDayToDefault()" title="Reset to default protocol">↩️ Reset
+          Default</button>
+      </div>
+      <div class="ai-status" id="aiStatus" style="display:none;"></div>
       </div>
 
       <div class="quick-add-panel" id="quickAddPanel">
@@ -304,6 +307,27 @@
             METRICS</button>
         </div>
 
+        <!-- Food Logging -->
+        <div class="ai-sync-panel food-log-panel">
+          <h3 class="subsection-title">📸 Food Log</h3>
+          <p class="section-desc" style="margin-bottom:12px;">Log meals with photos. AI estimates macros based on your
+            genome targets (FTO AA = 1.2g/lb protein, MTNR1B CG = carb timing).</p>
+          <div class="food-input-row">
+            <label class="food-photo-btn" for="foodPhotoInput">📷 Photo</label>
+            <input type="file" id="foodPhotoInput" accept="image/*" capture="environment" style="display:none;"
+              onchange="handleFoodPhoto(this)">
+            <input type="text" id="foodDescInput" class="food-desc-input"
+              placeholder="Describe meal (e.g. '3 eggs, 2 toast, avocado')">
+            <button class="start-workout-btn food-log-btn" onclick="submitFoodLog()">🍽️ LOG</button>
+          </div>
+          <div id="foodPhotoPreview" style="display:none;margin:10px 0;">
+            <img id="foodPreviewImg" style="max-height:120px;border-radius:8px;border:1px solid var(--border);">
+          </div>
+          <div id="foodAiStatus" class="ai-status" style="display:none;"></div>
+          <div class="daily-macros" id="dailyMacros"></div>
+          <div class="food-log-list" id="foodLogList"></div>
+        </div>
+
         <!-- Export / Import -->
         <div class="ai-sync-panel">
           <h3 class="subsection-title">🤖 Gemini Communication Layer</h3>
@@ -314,7 +338,6 @@
           <textarea id="aiPromptOutput" rows="10"
             style="display:none;width:100%;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:0.75rem;background:var(--bg-dark);color:var(--text-dim);border:1px solid var(--cyan);padding:10px;border-radius:6px;"
             readonly></textarea>
-
           <div style="margin-top:30px;">
             <p class="section-desc" style="margin-bottom:10px;">Paste the JSON response from Gemini here to update your
               schedule and see feedback.</p>
@@ -388,6 +411,7 @@
   <script src="data.js"></script>
   <script src="protocols.js"></script>
   <script src="workout-player.js"></script>
+  <script src="ai-engine.js"></script>
   <script src="app.js"></script>
 </body>
 

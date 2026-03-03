@@ -97,6 +97,7 @@ function renderScheduleDay(date) {
   const day = schedule[date];
   if (!day) { grid.innerHTML = '<p style="color:var(--text-dim)">No schedule data for this date.</p>'; return; }
 
+  const lockedBlocks = JSON.parse(localStorage.getItem('qfas_locked_' + date) || '{}');
   let html = '';
   html += `<div class="schedule-header">
     <div>
@@ -119,9 +120,13 @@ function renderScheduleDay(date) {
   (day.blocks || []).forEach((block, idx) => {
     const checked = dayComps[idx] ? 'checked' : '';
     const doneClass = dayComps[idx] ? ' completed' : '';
-    html += `<div class="schedule-block type-${block.type}${doneClass}">
+    const isLocked = lockedBlocks[idx];
+    const lockIcon = isLocked ? '<span class="lock-icon" title="Manually set time - AI will not move this block">🔒</span>' : '';
+    html += `<div class="schedule-block type-${block.type}${doneClass}" draggable="true" data-idx="${idx}" data-date="${date}"
+      ondragstart="onBlockDragStart(event)" ondragover="onBlockDragOver(event)" ondrop="onBlockDrop(event)" ondragend="onBlockDragEnd(event)">
       <input type="checkbox" class="block-check" ${checked} onchange="toggleBlockCompletion('${date}', ${idx}, this.checked)">
-      <div class="sb-time">${block.time}</div>
+      <div class="sb-time" onclick="editBlockTime('${date}', ${idx}, this)" title="Click to edit time">${block.time}</div>
+      ${lockIcon}
       <div class="sb-icon">${block.icon || '📌'}</div>
       <div class="sb-content">
         <div class="sb-label">${block.label}</div>
@@ -926,13 +931,269 @@ function resetDayToDefault() {
     delete custom[date];
     localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
   }
-  // Also clear completions
   const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
   if (completions[date]) {
     delete completions[date];
     localStorage.setItem('qfas_completions', JSON.stringify(completions));
   }
+  // Also clear locks
+  localStorage.removeItem('qfas_locked_' + date);
   renderScheduleDay(date);
   document.getElementById('toggleWorkBtn').textContent = '🏖️ No Work Today';
 }
+
+// ===== DRAG AND DROP SCHEDULE BLOCKS =====
+let dragSrcIdx = null;
+
+function onBlockDragStart(e) {
+  dragSrcIdx = parseInt(e.currentTarget.dataset.idx);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onBlockDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const block = e.currentTarget;
+  block.classList.add('drag-over');
+}
+
+function onBlockDrop(e) {
+  e.preventDefault();
+  const targetIdx = parseInt(e.currentTarget.dataset.idx);
+  const date = e.currentTarget.dataset.date;
+  e.currentTarget.classList.remove('drag-over');
+
+  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+
+  const schedule = getScheduleData();
+  const day = schedule[date];
+  if (!day || !day.blocks) return;
+
+  const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
+  if (!custom[date]) {
+    custom[date] = { ...day, blocks: JSON.parse(JSON.stringify(day.blocks)) };
+  }
+
+  // Swap blocks
+  const blocks = custom[date].blocks;
+  const temp = blocks[dragSrcIdx];
+  blocks.splice(dragSrcIdx, 1);
+  blocks.splice(targetIdx, 0, temp);
+
+  localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+  renderScheduleDay(date);
+}
+
+function onBlockDragEnd(e) {
+  dragSrcIdx = null;
+  document.querySelectorAll('.schedule-block').forEach(b => {
+    b.classList.remove('dragging', 'drag-over');
+  });
+}
+
+// ===== CLICK-TO-EDIT TIME =====
+function editBlockTime(date, idx, el) {
+  const schedule = getScheduleData();
+  const day = schedule[date];
+  if (!day || !day.blocks || !day.blocks[idx]) return;
+
+  const currentTime = day.blocks[idx].time;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentTime;
+  input.className = 'time-edit-input';
+  input.style.cssText = 'width:100%;font-size:inherit;font-weight:inherit;background:var(--bg-dark);color:var(--cyan);border:1px solid var(--cyan);padding:2px 6px;border-radius:4px;';
+
+  const save = () => {
+    const newTime = input.value.trim();
+    if (newTime && newTime !== currentTime) {
+      const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
+      if (!custom[date]) {
+        custom[date] = { ...day, blocks: JSON.parse(JSON.stringify(day.blocks)) };
+      }
+      custom[date].blocks[idx].time = newTime;
+      localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+
+      // Mark as locked
+      const locked = JSON.parse(localStorage.getItem('qfas_locked_' + date) || '{}');
+      locked[idx] = true;
+      localStorage.setItem('qfas_locked_' + date, JSON.stringify(locked));
+    }
+    renderScheduleDay(date);
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { renderScheduleDay(date); }
+  });
+
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+}
+
+// ===== AI OPTIMIZE SCHEDULE =====
+async function aiOptimizeSchedule() {
+  const date = currentScheduleDate || new Date().toISOString().slice(0, 10);
+  const statusEl = document.getElementById('aiStatus');
+  const btn = document.querySelector('.ai-btn');
+  const oldBtnText = btn ? btn.textContent : '';
+
+  try {
+    // Show status
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span class="ai-spinner"></span> AI is analyzing your schedule...';
+    statusEl.className = 'ai-status ai-thinking';
+    if (btn) btn.textContent = '⏳ Thinking...';
+    btn.disabled = true;
+
+    const result = await aiReschedule(date, (status) => {
+      if (status === 'thinking') {
+        statusEl.innerHTML = '<span class="ai-spinner"></span> Qwen 3.5 is optimizing your schedule with genome rules...';
+      }
+    });
+
+    // Apply the result
+    const custom = JSON.parse(localStorage.getItem(SCHED_STORAGE) || '{}');
+    const schedule = getScheduleData();
+    const day = schedule[date] || {};
+
+    custom[date] = {
+      dayLabel: day.dayLabel || date,
+      tagline: result.tagline || 'AI OPTIMIZED',
+      runType: result.runType || day.runType || 'TBD',
+      liftSlot: result.liftSlot || day.liftSlot || 'TBD',
+      blocks: result.blocks || []
+    };
+    localStorage.setItem(SCHED_STORAGE, JSON.stringify(custom));
+
+    // Update locked blocks from AI response
+    const locked = {};
+    (result.blocks || []).forEach((b, i) => {
+      if (b.locked) locked[i] = true;
+    });
+    localStorage.setItem('qfas_locked_' + date, JSON.stringify(locked));
+
+    renderScheduleDay(date);
+    statusEl.innerHTML = '✅ Schedule optimized by AI! Locked blocks preserved.';
+    statusEl.className = 'ai-status ai-success';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+  } catch (err) {
+    statusEl.innerHTML = '❌ ' + err.message;
+    statusEl.className = 'ai-status ai-error';
+    console.error('AI optimize error:', err);
+  } finally {
+    if (btn) { btn.textContent = oldBtnText; btn.disabled = false; }
+  }
+}
+
+// ===== FOOD LOGGING =====
+let pendingFoodPhoto = null;
+
+function handleFoodPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pendingFoodPhoto = e.target.result; // base64 data URL
+    document.getElementById('foodPhotoPreview').style.display = 'block';
+    document.getElementById('foodPreviewImg').src = pendingFoodPhoto;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitFoodLog() {
+  const desc = document.getElementById('foodDescInput').value.trim();
+  if (!desc && !pendingFoodPhoto) {
+    alert('Please describe your meal or take a photo.');
+    return;
+  }
+
+  const statusEl = document.getElementById('foodAiStatus');
+  const logBtn = document.querySelector('.food-log-btn');
+  const oldText = logBtn ? logBtn.textContent : '';
+
+  try {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span class="ai-spinner"></span> AI is analyzing your meal...';
+    statusEl.className = 'ai-status ai-thinking';
+    if (logBtn) { logBtn.textContent = '⏳ Analyzing...'; logBtn.disabled = true; }
+
+    const macros = await aiAnalyzeFood(desc || 'meal from photo');
+
+    // Build entry
+    const entry = {
+      ...macros,
+      description: desc,
+      photo: pendingFoodPhoto || null
+    };
+
+    const log = saveFoodEntry(entry);
+    renderFoodLog();
+
+    // Clear inputs
+    document.getElementById('foodDescInput').value = '';
+    pendingFoodPhoto = null;
+    document.getElementById('foodPhotoPreview').style.display = 'none';
+    document.getElementById('foodPhotoInput').value = '';
+
+    statusEl.innerHTML = `✅ Logged: ${macros.name} — ${macros.calories} cal, ${macros.protein}g protein`;
+    statusEl.className = 'ai-status ai-success';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+  } catch (err) {
+    statusEl.innerHTML = '❌ ' + err.message;
+    statusEl.className = 'ai-status ai-error';
+    console.error('Food log error:', err);
+  } finally {
+    if (logBtn) { logBtn.textContent = oldText; logBtn.disabled = false; }
+  }
+}
+
+function renderFoodLog() {
+  const date = new Date().toISOString().slice(0, 10);
+  const log = getFoodLog(date);
+  const macros = getDailyMacros(date);
+
+  // Render daily macro summary
+  const macroEl = document.getElementById('dailyMacros');
+  if (macroEl) {
+    macroEl.innerHTML = log.length > 0 ? `
+      <div class="macro-summary">
+        <div class="macro-item"><span class="macro-val">${macros.calories}</span><span class="macro-label">cal</span></div>
+        <div class="macro-item"><span class="macro-val">${macros.protein}g</span><span class="macro-label">protein</span></div>
+        <div class="macro-item"><span class="macro-val">${macros.carbs}g</span><span class="macro-label">carbs</span></div>
+        <div class="macro-item"><span class="macro-val">${macros.fat}g</span><span class="macro-label">fat</span></div>
+      </div>` : '';
+  }
+
+  // Render food entries
+  const listEl = document.getElementById('foodLogList');
+  if (!listEl) return;
+
+  if (log.length === 0) {
+    listEl.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;">No meals logged today.</p>';
+    return;
+  }
+
+  listEl.innerHTML = log.map(entry => `
+    <div class="food-entry">
+      ${entry.photo ? `<img src="${entry.photo}" class="food-entry-photo">` : ''}
+      <div class="food-entry-info">
+        <div class="food-entry-name">${entry.name || entry.description}</div>
+        <div class="food-entry-time">${entry.timestamp}</div>
+        <div class="food-entry-macros">${entry.calories} cal | P:${entry.protein}g C:${entry.carbs}g F:${entry.fat}g</div>
+        ${entry.notes ? `<div class="food-entry-notes">${entry.notes}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Initialize food log on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(renderFoodLog, 500);
+});
 

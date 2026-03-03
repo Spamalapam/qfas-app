@@ -1934,3 +1934,222 @@ footer {
   flex-shrink: 0;
   cursor: pointer;
 }
+
+/* Drag and Drop */
+.schedule-block[draggable="true"] {
+  cursor: grab;
+}
+
+.schedule-block.dragging {
+  opacity: 0.4;
+  border: 1px dashed var(--cyan);
+}
+
+.schedule-block.drag-over {
+  border-top: 3px solid var(--cyan);
+  margin-top: -3px;
+}
+
+/* Lock Icon */
+.lock-icon {
+  font-size: 0.7rem;
+  margin-right: 4px;
+  opacity: 0.7;
+}
+
+/* Clickable time */
+.sb-time {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.sb-time:hover {
+  color: var(--cyan);
+}
+
+/* AI Button */
+.ai-btn {
+  background: linear-gradient(135deg, rgba(180, 0, 255, 0.15), rgba(0, 240, 255, 0.1));
+  border-color: rgba(180, 0, 255, 0.5);
+}
+
+.ai-btn:hover {
+  border-color: #b400ff;
+  background: linear-gradient(135deg, rgba(180, 0, 255, 0.25), rgba(0, 240, 255, 0.15));
+}
+
+/* AI Status */
+.ai-status {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.ai-status.ai-thinking {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--cyan);
+}
+
+.ai-status.ai-success {
+  background: rgba(0, 255, 100, 0.08);
+  border: 1px solid rgba(0, 255, 100, 0.3);
+  color: #00ff64;
+}
+
+.ai-status.ai-error {
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.3);
+  color: #ff5555;
+}
+
+.ai-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 240, 255, 0.3);
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Food Log */
+.food-log-panel {
+  grid-column: 1 / -1;
+}
+
+.food-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.food-photo-btn {
+  padding: 8px 14px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.food-photo-btn:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.08);
+}
+
+.food-desc-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.food-desc-input:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.food-log-btn {
+  padding: 8px 16px !important;
+  font-size: 0.82rem !important;
+}
+
+/* Macro Summary */
+.macro-summary {
+  display: flex;
+  gap: 12px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.macro-item {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  text-align: center;
+  min-width: 70px;
+}
+
+.macro-val {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.macro-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Food Entries */
+.food-entry {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+  background: var(--bg-dark);
+}
+
+.food-entry-photo {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.food-entry-info {
+  flex: 1;
+}
+
+.food-entry-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff;
+}
+
+.food-entry-time {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.food-entry-macros {
+  font-size: 0.78rem;
+  color: var(--cyan);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.food-entry-notes {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  font-style: italic;
+}
