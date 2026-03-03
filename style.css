@@ -2255,3 +2255,29 @@ footer {
   font-size: 0.72rem;
   font-weight: 600;
 }
+
+/* Journal Panel */
+.journal-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* Food Delete Button */
+.food-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.food-delete-btn:hover {
+  opacity: 1;
+}

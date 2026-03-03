@@ -75,6 +75,9 @@
       <button class="tab-btn" data-tab="ai-sync">
         <span class="tab-icon">🤖</span> AI Sync
       </button>
+      <button class="tab-btn" data-tab="journal">
+        <span class="tab-icon">📓</span> Journal
+      </button>
     </nav>
 
     <!-- =========== SCHEDULE TAB =========== -->
@@ -307,26 +310,6 @@
             METRICS</button>
         </div>
 
-        <!-- Food Logging -->
-        <div class="ai-sync-panel food-log-panel">
-          <h3 class="subsection-title">📸 Food Log</h3>
-          <p class="section-desc" style="margin-bottom:12px;">Log meals with photos. AI estimates macros based on your
-            genome targets (FTO AA = 1.2g/lb protein, MTNR1B CG = carb timing).</p>
-          <div class="food-input-row">
-            <label class="food-photo-btn" for="foodPhotoInput">📷 Photo</label>
-            <input type="file" id="foodPhotoInput" accept="image/*" capture="environment" style="display:none;"
-              onchange="handleFoodPhoto(this)">
-            <input type="text" id="foodDescInput" class="food-desc-input"
-              placeholder="Describe meal (e.g. '3 eggs, 2 toast, avocado')">
-            <button class="start-workout-btn food-log-btn" onclick="submitFoodLog()">🍽️ LOG</button>
-          </div>
-          <div id="foodPhotoPreview" style="display:none;margin:10px 0;">
-            <img id="foodPreviewImg" style="max-height:120px;border-radius:8px;border:1px solid var(--border);">
-          </div>
-          <div id="foodAiStatus" class="ai-status" style="display:none;"></div>
-          <div class="daily-macros" id="dailyMacros"></div>
-          <div class="food-log-list" id="foodLogList"></div>
-        </div>
 
         <!-- Export / Import -->
         <div class="ai-sync-panel">
@@ -355,20 +338,48 @@
           <div id="aiFeedback" style="color:var(--text-dim);line-height:1.6;white-space:pre-wrap;"></div>
         </div>
 
-        <!-- Grade Journal -->
-        <div class="ai-sync-panel" style="grid-column:1/-1;">
-          <h3 class="subsection-title">📊 Grade Journal</h3>
-          <p class="section-desc" style="margin-bottom:10px;">AI protocol grades saved over time. Track your adherence
-            trend.</p>
-          <div id="gradeJournal"></div>
-        </div>
+      </div>
+    </section>
 
-        <!-- Food Diary History -->
-        <div class="ai-sync-panel" style="grid-column:1/-1;">
-          <h3 class="subsection-title">📓 Food Diary</h3>
-          <p class="section-desc" style="margin-bottom:10px;">Multi-day food log with macro totals per day.</p>
-          <div id="foodDiary"></div>
+    <!-- =========== JOURNAL TAB =========== -->
+    <section id="tab-journal" class="tab-panel">
+      <div class="section-header">
+        <h2>Journal</h2>
+        <p class="section-desc">Food diary, macro tracking, and AI protocol grades. Data resets daily — log what you
+          eat, track your grades.</p>
+      </div>
+
+      <!-- Today's Food Log -->
+      <div class="journal-panel">
+        <h3 class="subsection-title">🍽️ Today's Food Log</h3>
+        <div class="food-input-row">
+          <label class="food-photo-btn" for="journalFoodPhoto">📷 Photo</label>
+          <input type="file" id="journalFoodPhoto" accept="image/*" capture="environment" style="display:none;"
+            onchange="handleFoodPhoto(this)">
+          <input type="text" id="foodDescInput" class="food-desc-input"
+            placeholder="Describe meal (e.g. '3 eggs, 2 toast, avocado')">
+          <button class="start-workout-btn food-log-btn" onclick="submitFoodLog()">🍽️ LOG</button>
         </div>
+        <div id="foodPhotoPreview" style="display:none;margin:10px 0;">
+          <img id="foodPreviewImg" style="max-height:120px;border-radius:8px;border:1px solid var(--border);">
+        </div>
+        <div id="foodAiStatus" class="ai-status" style="display:none;"></div>
+        <div class="daily-macros" id="dailyMacros"></div>
+        <div class="food-log-list" id="foodLogList"></div>
+      </div>
+
+      <!-- Food Diary History -->
+      <div class="journal-panel">
+        <h3 class="subsection-title">📓 Food Diary History</h3>
+        <div id="foodDiary"></div>
+      </div>
+
+      <!-- Grade Journal -->
+      <div class="journal-panel">
+        <h3 class="subsection-title">📊 Grade Journal</h3>
+        <p class="section-desc" style="margin-bottom:10px;">AI protocol grades over time. Import an AI response to log a
+          grade.</p>
+        <div id="gradeJournal"></div>
       </div>
     </section>
   </main>

@@ -1175,7 +1175,7 @@ function renderFoodLog() {
       </div>` : '';
   }
 
-  // Render food entries
+  // Render food entries with delete button
   const listEl = document.getElementById('foodLogList');
   if (!listEl) return;
 
@@ -1184,7 +1184,7 @@ function renderFoodLog() {
     return;
   }
 
-  listEl.innerHTML = log.map(entry => `
+  listEl.innerHTML = log.map((entry, idx) => `
     <div class="food-entry">
       ${entry.photo ? `<img src="${entry.photo}" class="food-entry-photo">` : ''}
       <div class="food-entry-info">
@@ -1193,8 +1193,21 @@ function renderFoodLog() {
         <div class="food-entry-macros">${entry.calories} cal | P:${entry.protein}g C:${entry.carbs}g F:${entry.fat}g</div>
         ${entry.notes ? `<div class="food-entry-notes">${entry.notes}</div>` : ''}
       </div>
+      <button class="food-delete-btn" onclick="deleteFoodEntry(${idx})" title="Delete this entry">🗑️</button>
     </div>
   `).join('');
+}
+
+function deleteFoodEntry(idx) {
+  const date = new Date().toISOString().slice(0, 10);
+  const key = 'qfas_food_' + date;
+  const log = JSON.parse(localStorage.getItem(key) || '[]');
+  if (idx >= 0 && idx < log.length) {
+    log.splice(idx, 1);
+    localStorage.setItem(key, JSON.stringify(log));
+    renderFoodLog();
+    renderFoodDiary();
+  }
 }
 
 // Initialize food log, diary, and journal on page load

@@ -55,7 +55,8 @@ When optimizing a schedule:
 - Include the genome rationale in each block's detail field
 - Always respond with VALID JSON only, no markdown, no explanation outside the JSON`;
 
-// ===== CORS PROXY CHAIN (POST-capable only) =====
+// ===== CONNECTION CHAIN: local proxy first, then CORS fallbacks =====
+const LOCAL_PROXY = 'http://localhost:3141';
 const CORS_PROXIES = [
     (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
     (url) => 'https://corsproxy.org/?' + encodeURIComponent(url),
@@ -102,8 +103,9 @@ async function callQwen(systemPrompt, userMessage, onChunk) {
 
     var bodyStr = JSON.stringify(payload);
 
-    // Try direct first, then each CORS proxy
+    // Try local proxy first (fastest, most reliable), then direct, then CORS proxies
     var attempts = [
+        { url: LOCAL_PROXY, label: 'local-proxy' },
         { url: AI_CONFIG.url, label: 'direct' }
     ];
     for (var p = 0; p < CORS_PROXIES.length; p++) {
