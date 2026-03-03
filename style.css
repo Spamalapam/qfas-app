@@ -2153,3 +2153,105 @@ footer {
   margin-top: 4px;
   font-style: italic;
 }
+
+/* Grade Journal */
+.grade-entry {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: var(--bg-dark);
+}
+
+.grade-badge {
+  font-size: 1.6rem;
+  font-weight: 900;
+  min-width: 50px;
+  text-align: center;
+}
+
+.grade-info {
+  flex: 1;
+}
+
+.grade-date {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.grade-feedback {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Food Diary */
+.diary-day {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.diary-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(0, 240, 255, 0.05);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.diary-day-date {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff;
+}
+
+.diary-day-totals {
+  font-size: 0.78rem;
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+.diary-meals {
+  padding: 6px 14px;
+}
+
+.diary-meal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.8rem;
+}
+
+.diary-meal:last-child {
+  border-bottom: none;
+}
+
+.diary-meal-time {
+  color: var(--text-dim);
+  min-width: 65px;
+  font-size: 0.72rem;
+}
+
+.diary-meal-name {
+  flex: 1;
+  color: #fff;
+  font-weight: 600;
+}
+
+.diary-meal-macros {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 600;
+}

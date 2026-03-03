@@ -648,6 +648,11 @@ function importAIResponse() {
         document.getElementById('aiGrade').textContent = 'GRADE: ' + (parsed.grade || 'N/A');
         document.getElementById('aiFeedback').textContent = parsed.feedback || '';
       }
+      // Save to grade journal
+      if (typeof saveGradeEntry === 'function') {
+        saveGradeEntry(parsed.grade || 'N/A', parsed.feedback || '');
+        renderGradeJournal();
+      }
     }
 
     const btn = document.getElementById('importResponseBtn');
@@ -1192,8 +1197,66 @@ function renderFoodLog() {
   `).join('');
 }
 
-// Initialize food log on page load
+// Initialize food log, diary, and journal on page load
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(renderFoodLog, 500);
+  setTimeout(() => {
+    renderFoodLog();
+    renderFoodDiary();
+    renderGradeJournal();
+  }, 500);
 });
 
+// ===== GRADE JOURNAL RENDERER =====
+function renderGradeJournal() {
+  const el = document.getElementById('gradeJournal');
+  if (!el || typeof getGradeJournal !== 'function') return;
+
+  const journal = getGradeJournal();
+  if (journal.length === 0) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;">No grades yet. Import an AI response to save a grade.</p>';
+    return;
+  }
+
+  el.innerHTML = journal.map(entry => {
+    const gradeColor = entry.grade && entry.grade.startsWith('A') ? '#00ff64' :
+      entry.grade && entry.grade.startsWith('B') ? '#00f0ff' :
+        entry.grade && entry.grade.startsWith('C') ? '#ffb347' : '#ff5555';
+    const dateStr = new Date(entry.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return `<div class="grade-entry">
+      <div class="grade-badge" style="color:${gradeColor}">${entry.grade || 'N/A'}</div>
+      <div class="grade-info">
+        <div class="grade-date">${dateStr}</div>
+        <div class="grade-feedback">${(entry.feedback || '').slice(0, 200)}${(entry.feedback || '').length > 200 ? '...' : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== FOOD DIARY RENDERER =====
+function renderFoodDiary() {
+  const el = document.getElementById('foodDiary');
+  if (!el || typeof getFoodDiaryHistory !== 'function') return;
+
+  const history = getFoodDiaryHistory();
+  if (history.length === 0) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;">No food diary entries yet. Log a meal to start.</p>';
+    return;
+  }
+
+  el.innerHTML = history.map(day => {
+    const dateStr = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const meals = day.log.map(m => `<div class="diary-meal">
+      <span class="diary-meal-time">${m.timestamp}</span>
+      <span class="diary-meal-name">${m.name || m.description}</span>
+      <span class="diary-meal-macros">${m.calories}cal P:${m.protein}g</span>
+    </div>`).join('');
+
+    return `<div class="diary-day">
+      <div class="diary-day-header">
+        <span class="diary-day-date">${dateStr}</span>
+        <span class="diary-day-totals">${day.macros.calories} cal | P:${day.macros.protein}g C:${day.macros.carbs}g F:${day.macros.fat}g</span>
+      </div>
+      <div class="diary-meals">${meals}</div>
+    </div>`;
+  }).join('');
+}

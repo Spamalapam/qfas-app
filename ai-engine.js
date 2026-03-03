@@ -51,24 +51,37 @@ BLOCK TYPES: wake, running, lifting, core, nutrition, work, recovery, sleep, bio
 When optimizing a schedule:
 - NEVER move blocks marked as "locked": true
 - Keep the logical daily flow (fuel before exercise, post-exercise meal after, dinner in evening, sleep last)
-- Assign realistic time ranges (format: "12:45–1:20 PM")
+- Assign realistic time ranges (format: "12:45-1:20 PM")
 - Include the genome rationale in each block's detail field
 - Always respond with VALID JSON only, no markdown, no explanation outside the JSON`;
 
-// ===== CORE API CALL (with CORS proxy fallback) =====
+// ===== CORS PROXY CHAIN (POST-capable only) =====
 const CORS_PROXIES = [
     (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
-    (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    (url) => 'https://corsproxy.org/?' + encodeURIComponent(url),
     (url) => 'https://thingproxy.freeboard.io/fetch/' + url
 ];
 
+async function fetchWithTimeout(url, options, timeoutMs) {
+    timeoutMs = timeoutMs || 60000;
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    try {
+        const resp = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+        return resp;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// ===== CORE API CALL =====
 async function callQwen(systemPrompt, userMessage, onChunk) {
     if (!canCallAI()) {
         throw new Error('Rate limit reached (40/min). Please wait a moment.');
     }
     recordAICall();
 
-    const payload = {
+    var payload = {
         model: AI_CONFIG.model,
         messages: [
             { role: 'system', content: systemPrompt },
@@ -81,147 +94,139 @@ async function callQwen(systemPrompt, userMessage, onChunk) {
         chat_template_kwargs: { enable_thinking: false }
     };
 
-    const headers = {
+    var reqHeaders = {
         'Authorization': 'Bearer ' + AI_CONFIG.key,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     };
 
-    // Try direct first, then each CORS proxy
-    const attempts = [
-        { url: AI_CONFIG.url, label: 'direct' },
-        ...CORS_PROXIES.map((fn, i) => ({ url: fn(AI_CONFIG.url), label: 'proxy ' + (i + 1) }))
-    ];
+    var bodyStr = JSON.stringify(payload);
 
-    let lastError = null;
-    for (const attempt of attempts) {
+    // Try direct first, then each CORS proxy
+    var attempts = [
+        { url: AI_CONFIG.url, label: 'direct' }
+    ];
+    for (var p = 0; p < CORS_PROXIES.length; p++) {
+        attempts.push({ url: CORS_PROXIES[p](AI_CONFIG.url), label: 'proxy-' + (p + 1) });
+    }
+
+    var lastError = null;
+    for (var i = 0; i < attempts.length; i++) {
+        var attempt = attempts[i];
         try {
             console.log('[AI] Trying ' + attempt.label + '...');
-            if (onChunk) onChunk('[connecting via ' + attempt.label + '...]', '');
+            if (onChunk) onChunk('[Connecting via ' + attempt.label + '...]', '');
 
-            const response = await fetch(attempt.url, {
+            var response = await fetchWithTimeout(attempt.url, {
                 method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
+                headers: reqHeaders,
+                body: bodyStr
+            }, 60000);
 
             if (!response.ok) {
-                const errText = await response.text();
+                var errText = await response.text();
                 throw new Error('HTTP ' + response.status + ': ' + errText.slice(0, 200));
             }
 
-            const data = await response.json();
-            const content = data.choices?.[0]?.message?.content || '';
+            var data = await response.json();
+            var content = '';
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                content = data.choices[0].message.content || '';
+            }
             if (!content) throw new Error('Empty response from AI');
 
-            console.log('[AI] Success via ' + attempt.label);
+            console.log('[AI] Success via ' + attempt.label + ' (' + content.length + ' chars)');
             if (onChunk) onChunk(content, content);
             return content;
         } catch (err) {
-            console.warn('[AI] ' + attempt.label + ' failed:', err.message);
+            var msg = err.name === 'AbortError' ? 'Timeout (60s)' : err.message;
+            console.warn('[AI] ' + attempt.label + ' failed: ' + msg);
             lastError = err;
-            continue;
         }
     }
 
-    throw new Error('All API connection methods failed. Last error: ' + (lastError?.message || 'unknown'));
+    throw new Error('All API connections failed. Last error: ' + (lastError ? lastError.message : 'unknown'));
 }
 
 // ===== AI SCHEDULE OPTIMIZER =====
 async function aiReschedule(date, onStatus) {
-    const schedule = getScheduleData();
-    const day = schedule[date];
+    var schedule = getScheduleData();
+    var day = schedule[date];
     if (!day || !day.blocks) throw new Error('No schedule data for ' + date);
 
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    var now = new Date();
+    var currentTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-    // Get locked blocks
-    const lockedBlocks = JSON.parse(localStorage.getItem('qfas_locked_' + date) || '{}');
-    const completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
-    const dayComps = completions[date] || {};
+    var lockedBlocks = JSON.parse(localStorage.getItem('qfas_locked_' + date) || '{}');
+    var completions = JSON.parse(localStorage.getItem('qfas_completions') || '{}');
+    var dayComps = completions[date] || {};
 
-    // Build block list with lock status
-    let blockList = '';
-    day.blocks.forEach((block, idx) => {
-        const locked = lockedBlocks[idx] ? ' [LOCKED - DO NOT MOVE]' : '';
-        const done = dayComps[idx] ? ' [COMPLETED]' : '';
-        blockList += `${idx}. ${block.time} | ${block.label} | type:${block.type}${locked}${done}\n`;
+    var blockList = '';
+    day.blocks.forEach(function (block, idx) {
+        var locked = lockedBlocks[idx] ? ' [LOCKED - DO NOT MOVE]' : '';
+        var done = dayComps[idx] ? ' [COMPLETED]' : '';
+        blockList += idx + '. ' + block.time + ' | ' + block.label + ' | type:' + block.type + locked + done + '\n';
     });
 
-    const userMsg = `Current time: ${currentTime}
-Date: ${date}
-Day: ${day.dayLabel}
-Original tagline: ${day.tagline}
-Run type: ${day.runType}
-Lift slot: ${day.liftSlot}
-
-CURRENT BLOCKS:
-${blockList}
-
-INSTRUCTIONS:
-1. Keep all [COMPLETED] blocks with their original times
-2. NEVER change times on [LOCKED] blocks — schedule around them
-3. Remove blocks whose time has clearly passed and weren't completed
-4. Reschedule remaining blocks starting from ${currentTime}, keeping the logical daily flow
-5. Include genome rationale in each block's detail field
-6. Keep block durations realistic
-
-Respond with ONLY this JSON (no other text):
-{
-  "tagline": "RESCHEDULED: ...",
-  "runType": "${day.runType}",
-  "liftSlot": "${day.liftSlot}",
-  "blocks": [
-    {"time": "HH:MM AM", "label": "...", "icon": "emoji", "type": "blocktype", "detail": "...", "locked": false}
-  ]
-}`;
+    var userMsg = 'Current time: ' + currentTime + '\n' +
+        'Date: ' + date + '\n' +
+        'Day: ' + day.dayLabel + '\n' +
+        'Run type: ' + day.runType + '\n' +
+        'Lift slot: ' + day.liftSlot + '\n\n' +
+        'CURRENT BLOCKS:\n' + blockList + '\n' +
+        'INSTRUCTIONS:\n' +
+        '1. Keep all [COMPLETED] blocks with their original times\n' +
+        '2. NEVER change times on [LOCKED] blocks\n' +
+        '3. Remove blocks whose time has passed and were not completed\n' +
+        '4. Reschedule remaining blocks starting from ' + currentTime + '\n' +
+        '5. Include genome rationale in detail field\n\n' +
+        'Respond with ONLY JSON:\n' +
+        '{"tagline":"RESCHEDULED: ...","runType":"' + day.runType + '","liftSlot":"' + day.liftSlot + '",' +
+        '"blocks":[{"time":"HH:MM AM","label":"...","icon":"emoji","type":"blocktype","detail":"...","locked":false}]}';
 
     if (onStatus) onStatus('thinking');
-    const result = await callQwen(GENOME_SYSTEM_PROMPT, userMsg);
+    var result = await callQwen(GENOME_SYSTEM_PROMPT, userMsg);
 
-    // Parse JSON from response
-    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    var jsonMatch = result.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('AI did not return valid JSON');
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    return parsed;
+    return JSON.parse(jsonMatch[0]);
 }
 
 // ===== AI FOOD ANALYZER =====
 async function aiAnalyzeFood(description, onStatus) {
     if (onStatus) onStatus('analyzing');
 
-    const userMsg = `Analyze this meal/food and estimate macros:
+    var userMsg = 'Analyze this meal/food and estimate macros:\n\n' +
+        '"' + description + '"\n\n' +
+        'Respond with ONLY this JSON:\n' +
+        '{"name":"Short meal name","calories":000,"protein":00,"carbs":00,"fat":00,"fiber":00,' +
+        '"notes":"Brief genome-relevant note (e.g. FTO AA calorie impact, MTNR1B timing)"}';
 
-"${description}"
-
-Respond with ONLY this JSON:
-{
-  "name": "Short meal name",
-  "calories": 000,
-  "protein": 00,
-  "carbs": 00,
-  "fat": 00,
-  "fiber": 00,
-  "notes": "Brief genome-relevant note (e.g. FTO AA calorie impact, MTNR1B timing, IL-6 anti-inflammatory foods)"
-}`;
-
-    const result = await callQwen(GENOME_SYSTEM_PROMPT, userMsg);
-    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    var result = await callQwen(GENOME_SYSTEM_PROMPT, userMsg);
+    var jsonMatch = result.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('AI did not return valid JSON');
     return JSON.parse(jsonMatch[0]);
 }
 
 // ===== FOOD LOG STORAGE =====
 function saveFoodEntry(entry) {
-    const date = new Date().toISOString().slice(0, 10);
-    const key = 'qfas_food_' + date;
-    const log = JSON.parse(localStorage.getItem(key) || '[]');
+    var date = new Date().toISOString().slice(0, 10);
+    var key = 'qfas_food_' + date;
+    var log = JSON.parse(localStorage.getItem(key) || '[]');
     entry.timestamp = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     entry.id = Date.now();
     log.push(entry);
     localStorage.setItem(key, JSON.stringify(log));
+
+    // Also update the food diary index
+    var diaryIndex = JSON.parse(localStorage.getItem('qfas_food_diary_index') || '[]');
+    if (diaryIndex.indexOf(date) === -1) {
+        diaryIndex.push(date);
+        diaryIndex.sort().reverse();
+        localStorage.setItem('qfas_food_diary_index', JSON.stringify(diaryIndex));
+    }
+
     return log;
 }
 
@@ -231,12 +236,40 @@ function getFoodLog(date) {
 }
 
 function getDailyMacros(date) {
-    const log = getFoodLog(date);
-    return log.reduce((acc, entry) => {
+    var log = getFoodLog(date);
+    return log.reduce(function (acc, entry) {
         acc.calories += entry.calories || 0;
         acc.protein += entry.protein || 0;
         acc.carbs += entry.carbs || 0;
         acc.fat += entry.fat || 0;
         return acc;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+}
+
+function getFoodDiaryHistory() {
+    var index = JSON.parse(localStorage.getItem('qfas_food_diary_index') || '[]');
+    return index.map(function (date) {
+        return { date: date, log: getFoodLog(date), macros: getDailyMacros(date) };
+    });
+}
+
+// ===== GRADE JOURNAL =====
+function saveGradeEntry(grade, feedback, date) {
+    date = date || new Date().toISOString().slice(0, 10);
+    var key = 'qfas_grades';
+    var journal = JSON.parse(localStorage.getItem(key) || '[]');
+    journal.unshift({
+        date: date,
+        grade: grade,
+        feedback: feedback,
+        timestamp: new Date().toISOString()
+    });
+    // Keep last 90 days
+    if (journal.length > 90) journal = journal.slice(0, 90);
+    localStorage.setItem(key, JSON.stringify(journal));
+    return journal;
+}
+
+function getGradeJournal() {
+    return JSON.parse(localStorage.getItem('qfas_grades') || '[]');
 }
