@@ -55,7 +55,13 @@ When optimizing a schedule:
 - Include the genome rationale in each block's detail field
 - Always respond with VALID JSON only, no markdown, no explanation outside the JSON`;
 
-// ===== CORE API CALL =====
+// ===== CORE API CALL (with CORS proxy fallback) =====
+const CORS_PROXIES = [
+    (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
+    (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    (url) => 'https://thingproxy.freeboard.io/fetch/' + url
+];
+
 async function callQwen(systemPrompt, userMessage, onChunk) {
     if (!canCallAI()) {
         throw new Error('Rate limit reached (40/min). Please wait a moment.');
@@ -71,52 +77,54 @@ async function callQwen(systemPrompt, userMessage, onChunk) {
         max_tokens: AI_CONFIG.maxTokens,
         temperature: AI_CONFIG.temperature,
         top_p: 0.95,
-        stream: true,
+        stream: false,
         chat_template_kwargs: { enable_thinking: false }
     };
 
-    const response = await fetch(AI_CONFIG.url, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + AI_CONFIG.key,
-            'Content-Type': 'application/json',
-            'Accept': 'text/event-stream'
-        },
-        body: JSON.stringify(payload)
-    });
+    const headers = {
+        'Authorization': 'Bearer ' + AI_CONFIG.key,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
 
-    if (!response.ok) {
-        const err = await response.text();
-        throw new Error('AI API error: ' + response.status + ' — ' + err);
-    }
+    // Try direct first, then each CORS proxy
+    const attempts = [
+        { url: AI_CONFIG.url, label: 'direct' },
+        ...CORS_PROXIES.map((fn, i) => ({ url: fn(AI_CONFIG.url), label: 'proxy ' + (i + 1) }))
+    ];
 
-    // Stream the response
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullText = '';
+    let lastError = null;
+    for (const attempt of attempts) {
+        try {
+            console.log('[AI] Trying ' + attempt.label + '...');
+            if (onChunk) onChunk('[connecting via ' + attempt.label + '...]', '');
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+            const response = await fetch(attempt.url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error('HTTP ' + response.status + ': ' + errText.slice(0, 200));
+            }
 
-        for (const line of lines) {
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') continue;
-            try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content || '';
-                if (content) {
-                    fullText += content;
-                    if (onChunk) onChunk(content, fullText);
-                }
-            } catch (e) { /* skip parse errors in stream */ }
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content || '';
+            if (!content) throw new Error('Empty response from AI');
+
+            console.log('[AI] Success via ' + attempt.label);
+            if (onChunk) onChunk(content, content);
+            return content;
+        } catch (err) {
+            console.warn('[AI] ' + attempt.label + ' failed:', err.message);
+            lastError = err;
+            continue;
         }
     }
 
-    return fullText;
+    throw new Error('All API connection methods failed. Last error: ' + (lastError?.message || 'unknown'));
 }
 
 // ===== AI SCHEDULE OPTIMIZER =====
