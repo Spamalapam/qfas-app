@@ -2832,3 +2832,339 @@ footer {
 .sup-warn-item:last-child {
   border-bottom: none;
 }
+
+/* ===== MEAL PLAN ===== */
+.mp-timing-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.mp-section-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.mp-timing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.mp-timing-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.mp-timing-meal {
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.mp-timing-time {
+  font-size: 0.72rem;
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+.mp-timing-gene {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.mp-macro-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.mp-macro-item {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.mp-macro-num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.mp-cal {
+  background: rgba(255, 85, 85, 0.06);
+  border: 1px solid rgba(255, 85, 85, 0.2);
+}
+
+.mp-cal .mp-macro-num {
+  color: #ff5555;
+}
+
+.mp-pro {
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.mp-pro .mp-macro-num {
+  color: #00f0ff;
+}
+
+.mp-carb {
+  background: rgba(255, 179, 71, 0.06);
+  border: 1px solid rgba(255, 179, 71, 0.2);
+}
+
+.mp-carb .mp-macro-num {
+  color: #ffb347;
+}
+
+.mp-fat {
+  background: rgba(179, 136, 255, 0.06);
+  border: 1px solid rgba(179, 136, 255, 0.2);
+}
+
+.mp-fat .mp-macro-num {
+  color: #b388ff;
+}
+
+.mp-day-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.mp-day-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mp-day-tab:hover {
+  border-color: var(--cyan);
+  color: var(--text);
+}
+
+.mp-day-tab.active {
+  background: var(--cyan);
+  color: #0a0e1a;
+  border-color: var(--cyan);
+}
+
+.mp-day-content {
+  display: none;
+}
+
+.mp-day-content.active {
+  display: block;
+}
+
+.mp-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mp-day-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.mp-tagline {
+  color: var(--cyan);
+  font-style: italic;
+}
+
+.mp-day-totals {
+  display: flex;
+  gap: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.mdt-cal {
+  color: #ff5555;
+}
+
+.mdt-pro {
+  color: #00f0ff;
+}
+
+.mdt-carb {
+  color: #ffb347;
+}
+
+.mdt-fat {
+  color: #b388ff;
+}
+
+.mp-meal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.mp-meal-card:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.mp-meal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.mp-meal-icon {
+  font-size: 1.4rem;
+}
+
+.mp-meal-info {
+  flex: 1;
+}
+
+.mp-meal-name {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.mp-meal-type {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.mp-meal-macros {
+  display: flex;
+  gap: 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.mm-cal {
+  color: #ff5555;
+}
+
+.mm-pro {
+  color: #00f0ff;
+}
+
+.mm-carb {
+  color: #ffb347;
+}
+
+.mm-fat {
+  color: #b388ff;
+}
+
+.mp-meal-body {
+  padding: 0 16px 14px;
+}
+
+.mp-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.mp-ingredients ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mp-ingredients li {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mp-recipe p {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mp-tip {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  color: var(--cyan);
+  font-weight: 600;
+  padding: 6px 10px;
+  background: rgba(0, 240, 255, 0.04);
+  border-radius: 6px;
+  border-left: 2px solid var(--cyan);
+}
+
+@media (max-width: 600px) {
+  .mp-timing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-macro-bar {
+    gap: 4px;
+  }
+
+  .mp-macro-item {
+    min-width: 60px;
+    padding: 6px 4px;
+  }
+
+  .mp-macro-num {
+    font-size: 1rem;
+  }
+
+  .mp-meal-header {
+    flex-wrap: wrap;
+  }
+
+  .mp-meal-macros {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}

@@ -81,6 +81,9 @@
       <button class="tab-btn" data-tab="health">
         <span class="tab-icon">❤️</span> Health
       </button>
+      <button class="tab-btn" data-tab="meals">
+        <span class="tab-icon">🥗</span> Meals
+      </button>
     </nav>
 
     <!-- =========== SCHEDULE TAB =========== -->
@@ -445,6 +448,16 @@
         <div id="supplementProtocol"></div>
       </div>
     </section>
+
+    <!-- =========== MEALS TAB =========== -->
+    <section id="tab-meals" class="tab-panel">
+      <div class="section-header">
+        <h2>Genome-Driven Meal Plan</h2>
+        <p class="section-desc">7-day rotating plan. Every meal maps to your genome + Samsung Health targets. 1,900 cal
+          · 197g protein · 170g carbs · 55g fat.</p>
+      </div>
+      <div id="mealPlanContent"></div>
+    </section>
   </main>
 
   <!-- Workout Player Overlay -->
@@ -502,6 +515,7 @@
   <script src="workout-player.js"></script>
   <script src="ai-engine.js"></script>
   <script src="health-dashboard.js"></script>
+  <script src="meal-plan.js"></script>
   <script src="app.js"></script>
 </body>
 
