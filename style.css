@@ -2281,3 +2281,356 @@ footer {
 .food-delete-btn:hover {
   opacity: 1;
 }
+
+/* ===== HEALTH DASHBOARD ===== */
+.health-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 18px;
+}
+
+/* Stat Cards Grid */
+.health-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.health-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 14px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.health-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.accent-red::before {
+  background: linear-gradient(90deg, #ff5555, #ff8888);
+}
+
+.accent-green::before {
+  background: linear-gradient(90deg, #00ff64, #00cc50);
+}
+
+.accent-cyan::before {
+  background: linear-gradient(90deg, #00f0ff, #0088ff);
+}
+
+.accent-purple::before {
+  background: linear-gradient(90deg, #b388ff, #7c4dff);
+}
+
+.hsc-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.accent-red .hsc-value {
+  color: #ff5555;
+}
+
+.accent-green .hsc-value {
+  color: #00ff64;
+}
+
+.accent-cyan .hsc-value {
+  color: #00f0ff;
+}
+
+.accent-purple .hsc-value {
+  color: #b388ff;
+}
+
+.hsc-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.hsc-sub {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* Weight Timeline */
+.wt-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 160px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wt-date {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.wt-bar-wrap {
+  position: relative;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.wt-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.wt-val {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.wt-note {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+}
+
+/* Sleep Grid */
+.sleep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.sleep-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.sleep-card.sc-warn {
+  border-color: #ff5555;
+  background: rgba(255, 85, 85, 0.06);
+}
+
+.sc-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.sc-warn .sc-val {
+  color: #ff5555;
+}
+
+.sc-lbl {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+
+/* Activity Bars */
+.activity-bars {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 200px;
+  padding: 10px 0;
+}
+
+.ab-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.ab-val {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.ab-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.ab-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+}
+
+.ab-date {
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Nutrition Cards */
+.nut-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.nut-card {
+  border-radius: 12px;
+  padding: 18px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.nut-cal {
+  background: linear-gradient(135deg, rgba(255, 85, 85, 0.08), rgba(255, 85, 85, 0.02));
+  border-color: rgba(255, 85, 85, 0.3);
+}
+
+.nut-pro {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(0, 240, 255, 0.02));
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.nut-carb {
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.08), rgba(255, 179, 71, 0.02));
+  border-color: rgba(255, 179, 71, 0.3);
+}
+
+.nut-fat {
+  background: linear-gradient(135deg, rgba(179, 136, 255, 0.08), rgba(179, 136, 255, 0.02));
+  border-color: rgba(179, 136, 255, 0.3);
+}
+
+.nut-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.nut-cal .nut-val {
+  color: #ff5555;
+}
+
+.nut-pro .nut-val {
+  color: #00f0ff;
+}
+
+.nut-carb .nut-val {
+  color: #ffb347;
+}
+
+.nut-fat .nut-val {
+  color: #b388ff;
+}
+
+.nut-lbl {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.nut-sub {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Genome Insight Cards */
+.gi-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border-left: 3px solid;
+}
+
+.gi-warning {
+  background: rgba(255, 179, 71, 0.06);
+  border-color: #ffb347;
+}
+
+.gi-good {
+  background: rgba(0, 255, 100, 0.05);
+  border-color: #00ff64;
+}
+
+.gi-info {
+  background: rgba(0, 240, 255, 0.05);
+  border-color: #00f0ff;
+}
+
+.gi-header {
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.gi-gene {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--cyan);
+}
+
+.gi-text {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .health-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .wt-row {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .wt-note {
+    display: none;
+  }
+
+  .activity-bars {
+    height: 150px;
+  }
+
+  .nut-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

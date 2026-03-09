@@ -78,6 +78,9 @@
       <button class="tab-btn" data-tab="journal">
         <span class="tab-icon">📓</span> Journal
       </button>
+      <button class="tab-btn" data-tab="health">
+        <span class="tab-icon">❤️</span> Health
+      </button>
     </nav>
 
     <!-- =========== SCHEDULE TAB =========== -->
@@ -382,6 +385,58 @@
         <div id="gradeJournal"></div>
       </div>
     </section>
+
+    <!-- =========== HEALTH DASHBOARD TAB =========== -->
+    <section id="tab-health" class="tab-panel">
+      <div class="section-header">
+        <h2>Health Dashboard</h2>
+        <p class="section-desc">Samsung Health biometrics + genome analysis. 10 years of data driving your optimization.
+        </p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div id="healthStats" class="health-stats-grid"></div>
+
+      <!-- Weight Timeline -->
+      <div class="health-panel">
+        <h3 class="subsection-title">⚖️ Weight Journey (2016–2026)</h3>
+        <p class="section-desc" style="margin-bottom:14px;">Green = target zone. Red = intervention needed. Your body
+          responds to running volume.</p>
+        <div id="weightTimeline"></div>
+      </div>
+
+      <!-- Sleep Overview -->
+      <div class="health-panel">
+        <h3 class="subsection-title">😴 Sleep Quality</h3>
+        <p class="section-desc" style="margin-bottom:14px;">APOE e3/e4 makes every hour of quality sleep
+          neuroprotective. Snoring needs to be addressed via weight loss.</p>
+        <div id="sleepOverview"></div>
+      </div>
+
+      <!-- Activity Grid -->
+      <div class="health-panel">
+        <h3 class="subsection-title">💪 Daily Activity (Last 10 Days)</h3>
+        <p class="section-desc" style="margin-bottom:14px;">Green = 12K+, Cyan = 8K+, Orange = 5K+, Red = under 5K.
+          Consistency > big days.</p>
+        <div id="activityGrid"></div>
+      </div>
+
+      <!-- Nutrition Targets -->
+      <div class="health-panel">
+        <h3 class="subsection-title">🍗 Daily Nutrition Targets</h3>
+        <p class="section-desc" style="margin-bottom:14px;">Calculated from current weight, genome, and 1 lb/week fat
+          loss goal.</p>
+        <div id="nutritionTargets"></div>
+      </div>
+
+      <!-- Genome Insights -->
+      <div class="health-panel">
+        <h3 class="subsection-title">🧬 Active Genome Alerts</h3>
+        <p class="section-desc" style="margin-bottom:14px;">What your genes say about your current state, based on real
+          Samsung Health data.</p>
+        <div id="genomeInsights"></div>
+      </div>
+    </section>
   </main>
 
   <!-- Workout Player Overlay -->
@@ -438,6 +493,7 @@
   <script src="protocols.js"></script>
   <script src="workout-player.js"></script>
   <script src="ai-engine.js"></script>
+  <script src="health-dashboard.js"></script>
   <script src="app.js"></script>
 </body>
 
