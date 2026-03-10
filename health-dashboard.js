@@ -459,7 +459,232 @@ function renderSupplements() {
   supEl.innerHTML = html;
 }
 
+// ===== LAB RESULTS + GENOME CROSS-REFERENCE =====
+const LAB_DATA = {
+  patient: { name: 'Adam Sims', dob: 'May 6, 1992', provider: 'University of Utah Health', doctor: 'Jay D Kerr' },
+
+  lipid_panel: {
+    date: 'Mar 8, 2023',
+    stale: true,
+    values: [
+      { test: 'Total Cholesterol', value: 160, unit: 'mg/dL', range: '', status: 'good', genome: 'APOE e3/e4 — needs monitoring. 160 is solid but APOE risk means recheck annually.' },
+      { test: 'HDL Cholesterol', value: 54, unit: 'mg/dL', range: '40-59', status: 'ok', genome: 'APOE e3/e4 — HDL of 54 is acceptable but ideally >60. Running + Omega-3 will raise it.' },
+      { test: 'LDL Cholesterol', value: 94, unit: 'mg/dL', range: '0-129', status: 'good', genome: 'APOE e3/e4 — LDL under 100 is protective. Maintain with diet. DO NOT let this creep up.' },
+      { test: 'Triglycerides', value: 58, unit: 'mg/dL', range: '30-149', status: 'excellent', genome: 'Excellent. Low triglycerides + MTNR1B CG compliance = great glucose metabolism.' },
+      { test: 'VLDL', value: 12, unit: 'mg/dL', range: '0-30', status: 'good', genome: 'Well within range. Low VLDL correlates with low triglycerides.' },
+      { test: 'Vitamin D 25-OH', value: 68, unit: 'ng/mL', range: '30-80', status: 'good', genome: 'VDR CT — 68 is GREAT for your genotype. Keep supplementing D3 3,000-5,000 IU to maintain.' }
+    ]
+  },
+
+  cbc_trend: {
+    dates: ['Jun 2023', 'Oct 2024', 'May 2025', 'Jun 2025', 'Mar 2026'],
+    values: [
+      { test: 'WBC', vals: [4.82, 4.87, 4.68, 9.31, 5.11], unit: 'k/uL', range: '4.3-11.3' },
+      { test: 'RBC', vals: [5.11, 5.43, 5.29, 5.28, 5.38], unit: 'M/uL', range: '4.7-6.14' },
+      { test: 'Hemoglobin', vals: [15.9, 16.0, 16.1, 16.1, 16.6], unit: 'g/dL', range: '14.8-17.8' },
+      { test: 'Hematocrit', vals: [47.6, 49.0, 48.2, 47.6, 48.5], unit: '%', range: '44.2-53' },
+      { test: 'Platelets', vals: [225, 236, 203, 243, 246], unit: 'k/uL', range: '159-439' }
+    ]
+  },
+
+  cmp_trend: {
+    dates: ['Mar 2023', 'Jun 2024', 'Oct 2024', 'Jan 2025', 'May 2025', 'Dec 2025', 'Mar 2026'],
+    values: [
+      { test: 'Glucose', vals: [90, 91, 86, 100, 83, 89, 92], unit: 'mg/dL', range: '64-128', genome: 'MTNR1B CG — glucose well-controlled. The 100 spike (Jan 2025) was likely a non-fasting draw.' },
+      { test: 'Creatinine', vals: [1.06, 0.97, 0.82, 0.89, 0.97, 1.1, 1.14], unit: 'mg/dL', range: '0.72-1.25', genome: 'Trending up slightly (1.06→1.14). Watch this with kidney stone history.' },
+      { test: 'BUN', vals: [17, 16, null, 25, 16, 13, 15], unit: 'mg/dL', range: '8-24', genome: 'BUN spiked to 25 (Jan 2025) during kidney stone episode. Now normal.' },
+      { test: 'eGFR', vals: [96, 106, 119, 116, 105, 90, 87], unit: 'mL/min', range: '>60', genome: 'Trending DOWN (119→87). Still normal but the decline with kidney stone history needs monitoring.' }
+    ]
+  },
+
+  ecg: { date: 'Apr 22, 2021', result: 'Normal sinus rhythm', hr: 83, pr: 124, qrs: 98, qtc: 444, note: 'Normal ECG. Confirmed by Dr. Kerr.' },
+
+  conditions: [
+    {
+      name: 'OSA (Obstructive Sleep Apnea)', status: 'Active', severity: 'Routine',
+      genome: 'APOE e3/e4 + snoring detected on Samsung Health. At 143 lbs you didn\'t snore. Weight loss is the treatment.',
+      action: 'Lose weight → 155 lbs target. Samsung Health shows snoring correlates with weight >155.'
+    },
+    {
+      name: 'Excessive Daytime Sleepiness', status: 'Active', severity: 'Routine',
+      genome: 'COMT AA + ADORA2A CC — your brain is wired for sleep sensitivity. Modafinil prescribed. OSA makes this worse.',
+      action: 'Currently on modafinil 200mg. Treat the root cause (OSA/weight) to reduce medication dependence.'
+    },
+    {
+      name: 'Mild Intermittent Asthma', status: 'Active', severity: 'Routine',
+      genome: 'IL-6 CG inflammatory tendency may worsen airway reactivity. Exercise-induced likely.',
+      action: 'Albuterol PRN. Omega-3 + anti-inflammatory diet may reduce frequency.'
+    },
+    {
+      name: 'Kidney Stones (History)', status: 'Recurring',
+      genome: 'Not directly gene-linked but BUN spike to 25 + blood in urine (Jan 2025) = active episode.',
+      action: 'HYDRATE. 3L+ water daily. Reduce oxalate foods. Creatinine trending up (0.82→1.14) — protect kidneys.'
+    },
+    {
+      name: 'Androgenic Alopecia', status: 'Active',
+      genome: 'Genetic predisposition. Currently on finasteride 1mg.',
+      action: 'Finasteride 1mg daily. Monitor: finasteride can affect mood (COMT AA already anxiety-prone).'
+    },
+    {
+      name: 'Tree Nut Allergy', status: 'Active', severity: 'High',
+      genome: 'IL-6 CG + TNF-α AG = elevated inflammatory response. Carries EpiPen.',
+      action: 'Strict avoidance. EpiPen on person at all times. All meal plan recipes are tree-nut-free.'
+    }
+  ],
+
+  medications: [
+    {
+      name: 'Finasteride 1mg', purpose: 'Androgenic alopecia', status: 'Active',
+      interaction: '⚠️ Can affect mood/libido. COMT AA already anxiety-prone — monitor mental health closely.',
+      supplement_note: 'Zinc 15-30mg supports hair + counteracts potential testosterone effects.'
+    },
+    {
+      name: 'Modafinil 200mg', purpose: 'Excessive daytime sleepiness / OSA', status: 'Active',
+      interaction: '⚠️ CYP1A2 CC = fast metabolizer. May need timing adjustment. Take morning only.',
+      supplement_note: 'L-Theanine 200mg with morning dose smooths stimulation. Do NOT combine with cordyceps timing.'
+    },
+    {
+      name: 'Emtricitabine-Tenofovir 200-300mg (PrEP)', purpose: 'HIV pre-exposure prophylaxis', status: 'Active',
+      interaction: '⚠️ Tenofovir can affect kidney function. eGFR trending down (119→87). MONITOR CLOSELY.',
+      supplement_note: 'Vitamin D 3,000+ IU critical — tenofovir can reduce bone density. Already supplementing.'
+    },
+    {
+      name: 'Albuterol Inhaler', purpose: 'Asthma PRN', status: 'Active',
+      interaction: 'Use before running if needed. Omega-3 may reduce need over time.',
+      supplement_note: 'Cordyceps may improve oxygen utilization and reduce exercise-induced asthma.'
+    },
+    {
+      name: 'EpiPen (Epinephrine 0.3mg)', purpose: 'Tree nut allergy emergency', status: 'Active',
+      interaction: 'Carry at all times. All meal plan recipes verified tree-nut-free.',
+      supplement_note: 'No conflicts with supplement stack.'
+    }
+  ],
+
+  action_items: [
+    { priority: 'critical', text: 'GET UPDATED LIPID PANEL — Last one was March 2023 (3+ years ago). With APOE e3/e4, this needs annual monitoring.' },
+    { priority: 'critical', text: 'MONITOR eGFR — Trending down (119→87). Tenofovir (PrEP) + kidney stone history = kidney function needs quarterly checks.' },
+    { priority: 'warning', text: 'REQUEST: Testosterone panel, Thyroid (TSH/T3/T4), HbA1c, Ferritin/Iron. These were never ordered but are critical for your genome profile.' },
+    { priority: 'warning', text: 'Creatinine trending up (0.82→1.14). Still in range but the trajectory + kidney stones + PrEP = needs attention.' },
+    { priority: 'info', text: 'Vitamin D at 68 ng/mL is excellent for VDR CT. D3 supplementation is working. Maintain current dose.' },
+    { priority: 'info', text: 'Carbon dioxide slightly elevated on 3 draws (27 vs max 26). Minor — likely compensatory for activity level. Not actionable.' }
+  ]
+};
+
+function renderLabResults() {
+  const el = document.getElementById('labResults');
+  if (!el) return;
+
+  const d = LAB_DATA;
+  let html = '';
+
+  // Action Items (top priority)
+  html += `<div class="lab-actions">
+    <h4 class="lab-section-title">🚨 Action Items from Lab Review</h4>`;
+  d.action_items.forEach(a => {
+    const cls = a.priority === 'critical' ? 'la-critical' : a.priority === 'warning' ? 'la-warning' : 'la-info';
+    const icon = a.priority === 'critical' ? '🔴' : a.priority === 'warning' ? '🟡' : 'ℹ️';
+    html += `<div class="lab-action ${cls}">${icon} ${a.text}</div>`;
+  });
+  html += `</div>`;
+
+  // Lipid Panel
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">🫀 Lipid Panel <span class="lab-date">${d.lipid_panel.date}</span>
+    ${d.lipid_panel.stale ? '<span class="lab-stale">⚠️ STALE — 3+ YEARS OLD</span>' : ''}</h4>
+    <div class="lab-grid">`;
+  d.lipid_panel.values.forEach(v => {
+    const cls = v.status === 'excellent' ? 'lv-excellent' : v.status === 'good' ? 'lv-good' : v.status === 'ok' ? 'lv-ok' : 'lv-bad';
+    html += `<div class="lab-value-card ${cls}">
+      <div class="lv-value">${v.value} <span class="lv-unit">${v.unit}</span></div>
+      <div class="lv-name">${v.test}</div>
+      ${v.range ? `<div class="lv-range">Ref: ${v.range}</div>` : ''}
+      <div class="lv-genome">🧬 ${v.genome}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // CMP Trends
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">📊 Metabolic Panel Trends (2023–2026)</h4>
+    <div class="lab-trend-table"><table>
+      <tr><th>Test</th>${d.cmp_trend.dates.map(dt => `<th>${dt}</th>`).join('')}<th>Range</th></tr>`;
+  d.cmp_trend.values.forEach(row => {
+    html += `<tr><td class="lt-name">${row.test}</td>`;
+    row.vals.forEach(v => {
+      let cls = '';
+      if (v === null) { html += `<td>—</td>`; return; }
+      if (row.test === 'eGFR' && v < 90) cls = 'lt-warn';
+      else if (row.test === 'BUN' && v > 24) cls = 'lt-bad';
+      else if (row.test === 'Creatinine' && v > 1.1) cls = 'lt-warn';
+      html += `<td class="${cls}">${v}</td>`;
+    });
+    html += `<td class="lt-range">${row.range} ${row.unit}</td></tr>`;
+    if (row.genome) html += `<tr><td colspan="${d.cmp_trend.dates.length + 2}" class="lt-genome">🧬 ${row.genome}</td></tr>`;
+  });
+  html += `</table></div></div>`;
+
+  // CBC Trends
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">🩸 CBC Trends (2023–2026)</h4>
+    <div class="lab-trend-table"><table>
+      <tr><th>Test</th>${d.cbc_trend.dates.map(dt => `<th>${dt}</th>`).join('')}<th>Range</th></tr>`;
+  d.cbc_trend.values.forEach(row => {
+    html += `<tr><td class="lt-name">${row.test}</td>`;
+    row.vals.forEach(v => { html += `<td>${v}</td>`; });
+    html += `<td class="lt-range">${row.range} ${row.unit}</td></tr>`;
+  });
+  html += `</table></div>
+    <div class="lab-note">✅ All CBC values consistently within normal range across all draws. No anemia, no infection markers, no platelet issues.</div>
+  </div>`;
+
+  // Conditions
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">🏥 Active Conditions + Genome Cross-Reference</h4>
+    <div class="lab-conditions">`;
+  d.conditions.forEach(c => {
+    html += `<div class="lab-condition-card">
+      <div class="lc-header">
+        <div class="lc-name">${c.name}</div>
+        <div class="lc-status">${c.status}</div>
+      </div>
+      <div class="lc-genome">🧬 ${c.genome}</div>
+      <div class="lc-action">💊 ${c.action}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Medications
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">💊 Current Medications + Supplement Interactions</h4>
+    <div class="lab-meds">`;
+  d.medications.forEach(m => {
+    html += `<div class="lab-med-card">
+      <div class="lm-header">
+        <div class="lm-name">${m.name}</div>
+        <div class="lm-status">${m.status}</div>
+      </div>
+      <div class="lm-purpose">${m.purpose}</div>
+      <div class="lm-interaction">${m.interaction}</div>
+      <div class="lm-supplement">${m.supplement_note}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // ECG
+  html += `<div class="lab-panel">
+    <h4 class="lab-section-title">❤️ ECG <span class="lab-date">${d.ecg.date}</span></h4>
+    <div class="lab-ecg">
+      <div class="ecg-result">${d.ecg.result}</div>
+      <div class="ecg-details">HR: ${d.ecg.hr} BPM · PR: ${d.ecg.pr}ms · QRS: ${d.ecg.qrs}ms · QTc: ${d.ecg.qtc}ms</div>
+      <div class="ecg-note">${d.ecg.note}</div>
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
 // Init on page load
 document.addEventListener('DOMContentLoaded', function () {
   setTimeout(renderHealthDashboard, 600);
+  setTimeout(renderLabResults, 700);
 });
