@@ -44,7 +44,7 @@ const MEAL_PLAN = {
                         '1.5 scoops whey isolate (chocolate)',
                         '1 tbsp PB2 powdered peanut butter',
                         '1 frozen banana (small)',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Ice, blend'
                     ],
@@ -137,7 +137,7 @@ const MEAL_PLAN = {
                     ingredients: [
                         '1.5 scoops whey isolate (vanilla)',
                         '1/2 cup frozen strawberries',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Ice'
                     ],
@@ -226,7 +226,7 @@ const MEAL_PLAN = {
                     ingredients: [
                         '1.5 scoops whey isolate (chocolate)',
                         '1 shot espresso (cooled) or 1 tsp instant coffee',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Ice'
                     ],
@@ -414,7 +414,7 @@ const MEAL_PLAN = {
                         '1.5 scoops whey isolate (chocolate)',
                         '1 tbsp PB2 powdered peanut butter',
                         '1/2 frozen banana',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Ice'
                     ],
@@ -504,7 +504,7 @@ const MEAL_PLAN = {
                     ingredients: [
                         '1.5 scoops whey isolate (cookies & cream or vanilla)',
                         '2 Oreo thins, crushed',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Ice'
                     ],
@@ -531,12 +531,12 @@ const MEAL_PLAN = {
                     cal: 180, protein: 28, carbs: 14, fat: 2,
                     ingredients: [
                         '1 scoop casein (any flavor)',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '2 tbsp allulose',
                         '1/2 tsp xanthan gum',
                         'Ice (lots)'
                     ],
-                    recipe: 'Blend casein, almond milk, allulose, xanthan gum with LOTS of ice on high for 2-3 min. The xanthan gum + casein creates ice cream texture. Eat immediately with spoon.',
+                    recipe: 'Blend casein, oat milk, allulose, xanthan gum with LOTS of ice on high for 2-3 min. The xanthan gum + casein creates ice cream texture. Eat immediately with spoon.',
                     tip: '🍦 This is the cheat code. Actual ice cream consistency at 180 cal.'
                 },
                 {
@@ -595,7 +595,7 @@ const MEAL_PLAN = {
                     ingredients: [
                         '1.5 scoops whey isolate (vanilla)',
                         '1 tsp matcha powder',
-                        '1 cup unsweetened almond milk',
+                        '1 cup unsweetened oat milk',
                         '1 tbsp allulose',
                         'Handful of spinach (you won\'t taste it)',
                         'Ice'
